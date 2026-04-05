@@ -9,6 +9,7 @@ drop table if exists public.audit_logs cascade;
 drop table if exists public.admin_users cascade;
 drop table if exists public.about_section cascade;
 drop table if exists public.clients cascade;
+drop table if exists public.site_content_sections cascade;
 
 drop type if exists public.client_status cascade;
 drop type if exists public.app_role cascade;
@@ -126,6 +127,19 @@ create table public.about_section (
   constraint about_section_singleton_key_unique unique (singleton_key)
 );
 
+create table public.site_content_sections (
+  section_key text primary key,
+  heading text,
+  subheading text,
+  body text,
+  primary_label text,
+  secondary_label text,
+  items jsonb not null default '[]'::jsonb,
+  meta jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
 create table public.audit_logs (
   id uuid primary key default gen_random_uuid(),
   actor_user_id uuid references auth.users (id) on delete set null,
@@ -159,6 +173,12 @@ before update on public.about_section
 for each row
 execute function public.set_current_timestamp_updated_at();
 
+drop trigger if exists site_content_sections_set_updated_at on public.site_content_sections;
+create trigger site_content_sections_set_updated_at
+before update on public.site_content_sections
+for each row
+execute function public.set_current_timestamp_updated_at();
+
 drop trigger if exists clients_audit_trigger on public.clients;
 create trigger clients_audit_trigger
 after insert or update or delete on public.clients
@@ -174,6 +194,7 @@ execute function public.write_audit_log();
 alter table public.admin_users enable row level security;
 alter table public.clients enable row level security;
 alter table public.about_section enable row level security;
+alter table public.site_content_sections enable row level security;
 alter table public.audit_logs enable row level security;
 
 drop policy if exists "admin_users_self_read" on public.admin_users;
@@ -221,6 +242,21 @@ to authenticated
 using (public.is_saintce_admin())
 with check (public.is_saintce_admin());
 
+drop policy if exists "site_content_sections_public_read" on public.site_content_sections;
+create policy "site_content_sections_public_read"
+on public.site_content_sections
+for select
+to anon, authenticated
+using (true);
+
+drop policy if exists "site_content_sections_admin_manage" on public.site_content_sections;
+create policy "site_content_sections_admin_manage"
+on public.site_content_sections
+for all
+to authenticated
+using (public.is_saintce_admin())
+with check (public.is_saintce_admin());
+
 drop policy if exists "audit_logs_admin_read" on public.audit_logs;
 create policy "audit_logs_admin_read"
 on public.audit_logs
@@ -244,6 +280,59 @@ values (
   'The refactor removes duplicated admin flows and centralizes the data contract, which gives you a cleaner path to expand toward a fuller ERP-style back office.',
   'Every visible surface is moving toward one rule: fewer abstractions, fewer duplicate queries, and tighter control over performance and behavior.'
 );
+
+insert into public.site_content_sections (section_key, heading, subheading, body, primary_label, secondary_label, items, meta)
+values
+  (
+    'hero',
+    'Skeuomorphic control surface for modern operations',
+    'Build the system. Control the surface.',
+    'Saintce turns marketing, client delivery, and internal admin operations into one polished control layer with premium performance and disciplined architecture.',
+    'Launch a Build',
+    'Open Saintce Control',
+    '[{"label":"Admin Coverage","value":"Clients, CMS, Ops"},{"label":"Performance","value":"GPU-safe motion, cleaned timers, controlled subscriptions."},{"label":"Architecture","value":"Centralized data access with less duplication and cleaner state flow."}]'::jsonb,
+    '{"panelEyebrow":"Command Surface","panelTitle":"Clients, CMS, Ops","footerLeft":"Saintce Control","footerRight":"Edition 2026"}'::jsonb
+  ),
+  (
+    'process',
+    'Process',
+    'Built like a control system, not a landing page.',
+    null,
+    null,
+    null,
+    '[{"number":"01","title":"Map the system","description":"We collapse goals, permissions, content flows, and entities into one operating model before visuals or code fan out."},{"number":"02","title":"Shape the surface","description":"Navigation, panels, forms, and actions are designed as tactile control hardware so the interface feels deliberate, not generic."},{"number":"03","title":"Engineer the runtime","description":"We centralize data access, remove duplicate state paths, and keep motion cheap enough for Chrome inspection and real use."},{"number":"04","title":"Expand the console","description":"Once the core is reliable, new modules can grow into CRM, ERP, and internal operations without rewriting the shell."}]'::jsonb,
+    '{}'::jsonb
+  ),
+  (
+    'metrics',
+    null,
+    null,
+    null,
+    null,
+    null,
+    '[{"value":1,"suffix":"","label":"Unified admin shell"},{"value":0,"suffix":"","label":"Known timer leaks"},{"value":2,"suffix":"","label":"Live CMS domains"},{"value":100,"suffix":"%","label":"Brand consistency target"}]'::jsonb,
+    '{}'::jsonb
+  ),
+  (
+    'cta',
+    'Contact',
+    'Build the public face and the internal machine together.',
+    'Saintce is now structured so the website and admin control layer can evolve as one product instead of two disconnected builds.',
+    'Start a Saintce Build',
+    null,
+    '[]'::jsonb,
+    '{}'::jsonb
+  ),
+  (
+    'footer',
+    null,
+    null,
+    'Premium control surfaces for operations, delivery, and modern enterprise websites.',
+    'Copyright 2026 Saintce Systems. All rights reserved.',
+    null,
+    '[]'::jsonb,
+    '{}'::jsonb
+  );
 
 do $$
 begin

@@ -8,6 +8,7 @@ import { siteConfig } from "@/lib/site-config"
 
 const MENU = [
   { name: "Overview", href: "/admin" },
+  { name: "Sections", href: "/admin/sections" },
   { name: "Clients", href: "/admin/clients" },
   { name: "About", href: "/admin/about" },
 ]

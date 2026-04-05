@@ -5,13 +5,7 @@ import { motion, useInView } from "framer-motion"
 import Section from "@/components/ui/Section"
 import Container from "@/components/ui/Container"
 import { ANIMATION } from "@/lib/animation"
-
-const metrics = [
-  { value: 1, suffix: "", label: "Unified admin shell" },
-  { value: 0, suffix: "", label: "Known timer leaks" },
-  { value: 2, suffix: "", label: "Live CMS domains" },
-  { value: 100, suffix: "%", label: "Brand consistency target" },
-]
+import type { MetricsContent } from "@/lib/site-sections"
 
 function Counter({ value, suffix }: { value: number; suffix: string }) {
   const ref = useRef<HTMLSpanElement | null>(null)
@@ -55,12 +49,12 @@ function Counter({ value, suffix }: { value: number; suffix: string }) {
   )
 }
 
-export default function Metrics() {
+export default function Metrics({ content }: { content: MetricsContent }) {
   return (
     <Section subtleBg>
       <Container>
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {metrics.map((item, index) => (
+          {content.items.map((item, index) => (
             <motion.div
               key={item.label}
               initial={{ opacity: 0, y: 16 }}

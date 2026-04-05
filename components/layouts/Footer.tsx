@@ -1,7 +1,8 @@
 import Container from "@/components/ui/Container"
 import { siteConfig } from "@/lib/site-config"
+import type { FooterContent } from "@/lib/site-sections"
 
-export default function Footer() {
+export default function Footer({ content }: { content: FooterContent }) {
   return (
     <footer className="relative py-16">
       <Container>
@@ -11,12 +12,12 @@ export default function Footer() {
               {siteConfig.brand.name}
             </h3>
             <p className="mt-2 max-w-sm text-sm leading-relaxed text-[var(--muted)]">
-              Premium control surfaces for operations, delivery, and modern enterprise websites.
+              {content.description}
             </p>
           </div>
 
           <div className="text-sm tracking-wide text-[var(--muted)]">
-            Copyright 2026 {siteConfig.brand.legalName}. All rights reserved.
+            {content.copyright}
           </div>
         </div>
       </Container>

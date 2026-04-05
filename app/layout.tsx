@@ -1,5 +1,6 @@
 import "./globals.css"
 import { Cormorant_Garamond, DM_Sans, DM_Mono } from "next/font/google"
+import BackgroundCanvas from "@/components/effects/BackgroundCanvas"
 import MouseLight from "@/components/effects/MouseLight"
 import SmoothScroll from "@/components/providers/SmoothScroll"
 import type { Metadata, Viewport } from "next"
@@ -47,6 +48,7 @@ export default function RootLayout({
       className={`${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}
     >
       <body className="saintce-body antialiased relative">
+        <BackgroundCanvas />
         <MouseLight />
         <SmoothScroll>
           {children}

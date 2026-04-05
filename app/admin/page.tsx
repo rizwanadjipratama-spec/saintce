@@ -75,6 +75,9 @@ export default function AdminOverviewPage() {
         </div>
 
         <div className="flex gap-3">
+          <Link href="/admin/sections" className="saintce-button saintce-button--ghost">
+            Edit sections
+          </Link>
           <Link href="/admin/clients" className="saintce-button">
             Manage clients
           </Link>

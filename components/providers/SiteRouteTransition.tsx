@@ -24,7 +24,12 @@ export default function SiteRouteTransition({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: ANIMATION.routeTranslateY }}
         transition={{ duration: ANIMATION.durationMedium, ease: ANIMATION.easing }}
-        style={{ willChange: "transform, opacity" }}
+        style={{
+          willChange: "transform, opacity",
+          transform: "translateZ(0)",
+          backfaceVisibility: "hidden",
+          backgroundColor: "transparent",
+        }}
       >
         {children}
       </motion.div>
