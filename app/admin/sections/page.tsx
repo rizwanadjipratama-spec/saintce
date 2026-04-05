@@ -90,16 +90,6 @@ export default function AdminSectionsPage() {
           items: sections.process.items,
           meta: {},
         }),
-        upsertSiteSection("metrics", {
-          section_key: "metrics",
-          heading: null,
-          subheading: null,
-          body: null,
-          primary_label: null,
-          secondary_label: null,
-          items: sections.metrics.items,
-          meta: {},
-        }),
         upsertSiteSection("cta", {
           section_key: "cta",
           heading: sections.cta.eyebrow,
@@ -261,19 +251,6 @@ export default function AdminSectionsPage() {
                   </div>
                   <textarea value={item.description} onChange={(e) => setSections((prev) => ({ ...prev, process: { ...prev.process, items: prev.process.items.map((entry, entryIndex) => entryIndex === index ? { ...entry, description: e.target.value } : entry) } }))} className="saintce-input min-h-[120px]" placeholder="Step description" />
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="saintce-inset rounded-[28px] p-6">
-          <h2 className="font-display text-2xl">Metrics</h2>
-          <div className="mt-5 grid gap-4">
-            {sections.metrics.items.map((item, index) => (
-              <div key={index} className="grid gap-4 md:grid-cols-[1fr_140px_140px]">
-                <input value={item.label} onChange={(e) => setSections((prev) => ({ ...prev, metrics: { ...prev.metrics, items: prev.metrics.items.map((entry, entryIndex) => entryIndex === index ? { ...entry, label: e.target.value } : entry) } }))} className="saintce-input" placeholder="Metric label" />
-                <input value={String(item.value)} onChange={(e) => setSections((prev) => ({ ...prev, metrics: { ...prev.metrics, items: prev.metrics.items.map((entry, entryIndex) => entryIndex === index ? { ...entry, value: Number(e.target.value || 0) } : entry) } }))} className="saintce-input" placeholder="Value" />
-                <input value={item.suffix} onChange={(e) => setSections((prev) => ({ ...prev, metrics: { ...prev.metrics, items: prev.metrics.items.map((entry, entryIndex) => entryIndex === index ? { ...entry, suffix: e.target.value } : entry) } }))} className="saintce-input" placeholder="Suffix" />
               </div>
             ))}
           </div>

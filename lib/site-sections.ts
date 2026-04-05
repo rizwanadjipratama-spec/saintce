@@ -19,16 +19,6 @@ export interface ProcessContent {
   items: Array<{ number: string; title: string; description: string }>
 }
 
-export interface MetricItem {
-  value: number
-  suffix: string
-  label: string
-}
-
-export interface MetricsContent {
-  items: MetricItem[]
-}
-
 export interface CtaContent {
   eyebrow: string
   title: string
@@ -44,7 +34,6 @@ export interface FooterContent {
 export interface SiteSectionsContent {
   hero: HeroContent
   process: ProcessContent
-  metrics: MetricsContent
   cta: CtaContent
   footer: FooterContent
 }
@@ -108,14 +97,6 @@ const DEFAULT_SITE_SECTIONS: SiteSectionsContent = {
         description:
           "Once the core is reliable, new modules can grow into CRM, ERP, and internal operations without rewriting the shell.",
       },
-    ],
-  },
-  metrics: {
-    items: [
-      { value: 1, suffix: "", label: "Unified admin shell" },
-      { value: 0, suffix: "", label: "Known timer leaks" },
-      { value: 2, suffix: "", label: "Live CMS domains" },
-      { value: 100, suffix: "%", label: "Brand consistency target" },
     ],
   },
   cta: {
@@ -184,26 +165,6 @@ function normalizeProcess(row?: SectionRow): ProcessContent {
   }
 }
 
-function normalizeMetrics(row?: SectionRow): MetricsContent {
-  const items = Array.isArray(row?.items) ? row!.items : []
-
-  return {
-    items: items
-      .filter(isRecord)
-      .map((item, index) => ({
-        value:
-          typeof item.value === "number"
-            ? item.value
-            : Number(item.value ?? DEFAULT_SITE_SECTIONS.metrics.items[index]?.value ?? 0),
-        suffix: asString(item.suffix, DEFAULT_SITE_SECTIONS.metrics.items[index]?.suffix || ""),
-        label: asString(item.label, DEFAULT_SITE_SECTIONS.metrics.items[index]?.label || ""),
-      }))
-      .slice(0, 4)
-      .concat(DEFAULT_SITE_SECTIONS.metrics.items)
-      .slice(0, 4),
-  }
-}
-
 function normalizeCta(row?: SectionRow): CtaContent {
   return {
     eyebrow: asString(row?.heading, DEFAULT_SITE_SECTIONS.cta.eyebrow),
@@ -230,7 +191,6 @@ function mapRowsToSections(rows: SectionRow[] | null | undefined): SiteSectionsC
   return {
     hero: normalizeHero(sections.get("hero")),
     process: normalizeProcess(sections.get("process")),
-    metrics: normalizeMetrics(sections.get("metrics")),
     cta: normalizeCta(sections.get("cta")),
     footer: normalizeFooter(sections.get("footer")),
   }

@@ -304,16 +304,6 @@ values
     '{}'::jsonb
   ),
   (
-    'metrics',
-    null,
-    null,
-    null,
-    null,
-    null,
-    '[{"value":1,"suffix":"","label":"Unified admin shell"},{"value":0,"suffix":"","label":"Known timer leaks"},{"value":2,"suffix":"","label":"Live CMS domains"},{"value":100,"suffix":"%","label":"Brand consistency target"}]'::jsonb,
-    '{}'::jsonb
-  ),
-  (
     'cta',
     'Contact',
     'Build the public face and the internal machine together.',
