@@ -5,8 +5,14 @@ import Lenis from "lenis"
 
 /**
  * COMPONENT: SmoothScroll
- * PURPOSE: Provides global smooth scroll behavior.
- * PERFORMANCE: Cancels requestAnimationFrame loop on unmount to avoid leaks.
+ * PURPOSE: Provides global smooth scroll behavior via Lenis.
+ * PERFORMANCE:
+ *   - RAF loop cancels on unmount (no leak).
+ *   - RAF pauses when tab is hidden and resumes on visibility, preventing
+ *     stale scroll state and wasted GPU cycles on hidden tabs.
+ *   - lerp-based interpolation instead of duration: more responsive on fast
+ *     scroll, less likely to create a long momentum tail that causes white tiles.
+ *   - Disabled on touch-like devices and reduced-motion preference.
  */
 export default function SmoothScroll({
   children,
@@ -22,21 +28,41 @@ export default function SmoothScroll({
     }
 
     const lenis = new Lenis({
-      duration: 1.15,
+      lerp: 0.1,
       smoothWheel: true,
       wheelMultiplier: 1,
+      touchMultiplier: 1.5,
+      infinite: false,
     })
+
     let rafId = 0
+    let running = true
 
     function raf(time: number) {
+      if (!running) return
       lenis.raf(time)
       rafId = requestAnimationFrame(raf)
     }
 
     rafId = requestAnimationFrame(raf)
 
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        running = false
+        cancelAnimationFrame(rafId)
+        rafId = 0
+      } else {
+        running = true
+        rafId = requestAnimationFrame(raf)
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+
     return () => {
+      running = false
       cancelAnimationFrame(rafId)
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
       lenis.destroy()
     }
   }, [])

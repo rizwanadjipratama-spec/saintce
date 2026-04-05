@@ -8,6 +8,9 @@ import { ANIMATION } from "@/lib/animation"
  * COMPONENT: SiteRouteTransition
  * PURPOSE: Standardized App Router transition wrapper.
  * PERFORMANCE: Uses GPU-friendly opacity + translateY only.
+ * NOTE: willChange is NOT set statically — a permanent compositing layer causes
+ * white-flash during fast scroll because the fixed background canvas sits outside
+ * the layer's paint context. Framer Motion sets it internally only during animation.
  */
 export default function SiteRouteTransition({
   children,
@@ -25,8 +28,6 @@ export default function SiteRouteTransition({
         exit={{ opacity: 0, y: ANIMATION.routeTranslateY }}
         transition={{ duration: ANIMATION.durationMedium, ease: ANIMATION.easing }}
         style={{
-          willChange: "transform, opacity",
-          transform: "translateZ(0)",
           backfaceVisibility: "hidden",
           backgroundColor: "transparent",
         }}

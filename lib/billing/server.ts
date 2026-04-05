@@ -1,7 +1,7 @@
 ﻿import "server-only"
 
 import { getSupabaseAdmin } from "@/lib/supabase-admin"
-import { sendInvoiceReminder, sendIssuedInvoiceNotification } from "@/lib/notifications/service"
+import { sendInvoiceReminder, sendIssuedInvoiceNotification, sendSubscriptionSuspendedEmail } from "@/lib/notifications/service"
 import { formatCurrency } from "@/lib/utils"
 import type {
   BillingReminderCandidate,
@@ -138,4 +138,59 @@ export async function sendBillingNotifications(runAt?: string): Promise<BillingR
     notificationsSent,
     skipped,
   }
+}
+
+/**
+ * After run_billing_automation executes, query subscriptions that were
+ * suspended in the last run window and fire suspension emails.
+ * Fire-and-forget: failures are caught and counted in skipped.
+ */
+export async function sendSuspensionNotifications(runAt = new Date().toISOString()): Promise<{ sent: number; skipped: number }> {
+  const admin = getSupabaseAdmin()
+
+  // Newly suspended = suspended_at within last hour (covers cron window + manual runs)
+  const windowStart = new Date(new Date(runAt).getTime() - 60 * 60 * 1000).toISOString()
+
+  const { data, error } = await admin
+    .from("subscriptions")
+    .select(`
+      id,
+      service:services(
+        name,
+        project:projects(
+          name,
+          client:clients(name, email)
+        )
+      )
+    `)
+    .eq("status", "suspended")
+    .gte("suspended_at", windowStart)
+
+  if (error || !data) return { sent: 0, skipped: 0 }
+
+  let sent = 0
+  let skipped = 0
+
+  for (const row of data as Array<Record<string, unknown>>) {
+    try {
+      const svc = (Array.isArray(row.service) ? row.service[0] : row.service) as Record<string, unknown> | undefined
+      const proj = svc ? (Array.isArray(svc.project) ? svc.project[0] : svc.project) as Record<string, unknown> | undefined : undefined
+      const client = proj ? (Array.isArray(proj.client) ? proj.client[0] : proj.client) as Record<string, unknown> | undefined : undefined
+
+      if (!client?.email) { skipped++; continue }
+
+      await sendSubscriptionSuspendedEmail({
+        to: String(client.email),
+        clientName: String(client.name ?? "Client"),
+        projectName: String(proj?.name ?? ""),
+        serviceName: String(svc?.name ?? ""),
+      })
+
+      sent++
+    } catch {
+      skipped++
+    }
+  }
+
+  return { sent, skipped }
 }

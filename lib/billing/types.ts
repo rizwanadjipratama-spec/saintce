@@ -1,10 +1,12 @@
 ﻿export interface BillingOverview {
   monthlyRevenue: number
+  mrr: number
   activeSubscriptions: number
   overdueInvoices: number
   suspendedServices: number
   totalClients: number
   totalProjects: number
+  stripeWebhookFailures: number
   recentPayments: Array<{
     id: string
     amount: number
@@ -18,6 +20,25 @@
     amount: number
     status: string
     due_date: string
+  }>
+  recentStripeEvents: Array<{
+    id: string
+    event_id: string
+    event_type: string
+    processing_status: "processing" | "processed" | "failed"
+    error_message: string | null
+    livemode: boolean
+    received_at: string
+  }>
+  recentAutomationLogs: Array<{
+    id: string
+    run_at: string
+    invoices_generated: number
+    invoices_overdue: number
+    subscriptions_suspended: number
+    notifications_sent: number
+    duration_ms: number
+    error_message: string | null
   }>
 }
 

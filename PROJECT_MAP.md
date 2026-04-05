@@ -347,15 +347,97 @@ Fitur utama yang sudah ada:
 - Supabase RLS + admin table
 - Realtime clients
 - Favicon / manifest / Apple app title support
+- Billing platform: projects, services, subscriptions, invoices, payments
+- Stripe integration: checkout, recurring, billing portal, webhook
+- Billing automation (database-level cron function)
+- Client Portal: magic link login, dashboard, projects, subscriptions, invoices, pay via Stripe
+- Client Portal RLS: setiap client hanya bisa lihat data mereka sendiri
 
-## 10. Catatan Penting
+## 10. Performance Hardening (2026-04-05) — Audit Round
+
+Perbaikan production-ready tanpa mengubah visual apapun:
+
+### Root Cause Fix: White Flash on Fast Scroll
+
+Masalah utama "jadi putih waktu scroll cepet" disebabkan oleh 3 faktor sekaligus:
+
+1. **`scroll-behavior: smooth` di `html`** — konflik dengan Lenis (double-smooth). Dihapus dari `globals.css`.
+2. **`willChange: "transform, opacity"` permanent di `SiteRouteTransition`** — menciptakan compositing layer permanen yang memisahkan background canvas dari paint context halaman, menyebabkan white frame saat GPU sedang berat. Dihapus dari `style` prop statis; Framer Motion handle sendiri saat animasi aktif.
+3. **`.saintce-canvas` tidak punya `will-change`** — background canvas bisa di-evict dari GPU layer saat ada activity berat. Ditambah `will-change: transform` + `contain: strict`.
+
+### File yang Diubah
+
+- **`app/globals.css`**
+  - Hapus `scroll-behavior: smooth` dari `html`
+  - `html` dan `body` background-color pakai literal `#09090b` (fallback sebelum CSS vars resolve)
+  - `.saintce-canvas` ditambah `will-change: transform` + `contain: strict` → permanent GPU layer
+  - `.marquee-wrapper` ditambah `contain: layout style` → isolasi paint marquee
+  - `.marquee-track` ditambah `will-change: transform` + `backface-visibility: hidden` → GPU-accelerated animation
+
+- **`components/providers/SiteRouteTransition.tsx`**
+  - Hapus `willChange: "transform, opacity"` dari `style` prop statis
+  - Hapus `transform: "translateZ(0)"` yang tidak diperlukan di level ini
+  - `backfaceVisibility` dan `backgroundColor` dipertahankan
+
+- **`components/providers/SmoothScroll.tsx`**
+  - Ganti `duration: 1.15` ke `lerp: 0.1` — lebih responsive saat scroll cepet, tail momentum lebih pendek
+  - Tambah `touchMultiplier: 1.5` dan `infinite: false`
+  - Tambah `visibilitychange` handler: RAF loop berhenti saat tab hidden, resume saat tab aktif (no GPU waste, no stale scroll state)
+
+- **`next.config.ts`**
+  - `poweredByHeader: false` — tidak expose server info
+  - `compress: true` — gzip/brotli response
+  - Security headers: `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Permissions-Policy`
+  - Long-lived cache headers untuk static assets (fonts, images, icons)
+
+## 11. Catatan Penting (Non-Technical Notes)
 
 - File `README.md` root masih template bawaan Next.js, jadi dokumentasi project yang bener sekarang ada di file ini
 - Folder build seperti `.next` dan dependency `node_modules` tidak didokumentasikan satu-satu karena generated
 - Route `/admin/about` dan `/ajx-core` sekarang hanya route legacy/redirect
 - Auth admin yang benar untuk write Supabase tetap bergantung pada tabel `public.admin_users`
 
-## 11. Billing Platform Expansion (2026-04-05)
+## 12. Client Portal (2026-04-06)
+
+Client-facing authenticated portal. Terpisah dari admin panel.
+
+### Auth
+- Login via Supabase magic link (email)
+- Hanya email yang terdaftar di `clients.email` yang bisa masuk
+- Tidak bisa self-register — harus didaftarkan admin dulu
+
+### Routes
+- `/portal/login` — halaman login magic link
+- `/portal` — dashboard (summary stats + recent invoices)
+- `/portal/projects` — daftar project + status service tiap project
+- `/portal/subscriptions` — daftar subscription + status + next billing date
+- `/portal/invoices` — daftar invoice dengan filter + pay button
+- `/portal/invoices/[id]` — detail invoice + Stripe Checkout redirect
+
+### API Routes
+- `POST /api/portal/checkout` — buat Stripe Checkout session dari client (verifikasi ownership invoice sebelum buat session)
+
+### Files
+- [lib/portal/auth.ts](/C:/Users/Administrator/OneDrive/Desktop/saintce/lib/portal/auth.ts) — getPortalSession, sendPortalMagicLink, signOutPortal
+- [lib/portal/data.ts](/C:/Users/Administrator/OneDrive/Desktop/saintce/lib/portal/data.ts) — getPortalProjects, getPortalInvoices, getPortalSummary, dll
+- [components/portal/PortalShell.tsx](/C:/Users/Administrator/OneDrive/Desktop/saintce/components/portal/PortalShell.tsx) — portal layout dengan navbar + mobile nav + auth guard
+- [app/portal/layout.tsx](/C:/Users/Administrator/OneDrive/Desktop/saintce/app/portal/layout.tsx)
+- [app/portal/page.tsx](/C:/Users/Administrator/OneDrive/Desktop/saintce/app/portal/page.tsx)
+- [app/portal/login/page.tsx](/C:/Users/Administrator/OneDrive/Desktop/saintce/app/portal/login/page.tsx)
+- [app/portal/projects/page.tsx](/C:/Users/Administrator/OneDrive/Desktop/saintce/app/portal/projects/page.tsx)
+- [app/portal/subscriptions/page.tsx](/C:/Users/Administrator/OneDrive/Desktop/saintce/app/portal/subscriptions/page.tsx)
+- [app/portal/invoices/page.tsx](/C:/Users/Administrator/OneDrive/Desktop/saintce/app/portal/invoices/page.tsx)
+- [app/portal/invoices/[id]/page.tsx](/C:/Users/Administrator/OneDrive/Desktop/saintce/app/portal/invoices/[id]/page.tsx)
+- [app/api/portal/checkout/route.ts](/C:/Users/Administrator/OneDrive/Desktop/saintce/app/api/portal/checkout/route.ts)
+
+### Security
+- RLS: client hanya bisa baca data mereka sendiri (via `clients.email` match ke `auth.users.email`)
+- Database functions: `is_portal_client()`, `get_portal_client_id()`
+- Invoice ownership verified server-side sebelum Stripe session dibuat
+- Migration: [20260406_000009_add_client_portal.sql](/C:/Users/Administrator/OneDrive/Desktop/saintce/supabase/migrations/20260406_000009_add_client_portal.sql)
+- Stripe success/cancel redirect ke portal URL, bukan admin URL
+
+## 13. Billing Platform Expansion (2026-04-05)
 
 Upgrade baru yang sudah ditambahkan tanpa mengubah visual design Saintce:
 
@@ -492,8 +574,134 @@ Flow Stripe yang sekarang sudah ada:
 - system ensure Stripe customer, product, dan recurring price sebelum create session
 - Stripe webhook verifikasi signature
 - duplicate webhook event di-skip via lock idempotency database
+- billing overview menampilkan recent Stripe webhook activity + failed count
 - `checkout.session.completed` mode subscription menyimpan `stripe_subscription_id` ke internal subscription
 - `invoice.paid` Stripe akan mirror invoice recurring ke internal invoice lalu record payment
 - event payment success sync ke `payments`, `invoices`, `subscriptions`, dan access state
 - event payment failed tandai subscription `past_due`
 - event subscription updated/deleted dari Stripe update status internal via mapping `stripe_subscription_id`
+
+## 14. Session 4 Additions (2026-04-05)
+
+### Notification Emails
+
+Email notifikasi baru yang di-hook ke event Stripe webhook dan billing automation:
+- `sendPaymentSuccessEmail` — dikirim saat `checkout.session.completed` (fire-and-forget)
+- `sendPaymentFailedEmail` — dikirim saat `payment_intent.payment_failed`
+- `sendSubscriptionSuspendedEmail` — dikirim saat subscription berubah jadi `suspended` via Stripe event atau billing automation
+- `sendSubscriptionReactivatedEmail` — dikirim saat subscription kembali `active` dari `suspended`
+
+File: [lib/notifications/service.ts](/C:/Users/Administrator/OneDrive/Desktop/saintce/lib/notifications/service.ts)
+
+### Invoice PDF (Print)
+
+Client bisa cetak/save PDF invoice langsung dari browser:
+- Route: `/portal/invoices/[id]/print` — halaman self-contained dengan inline styles
+- Berisi: header brand, metadata invoice, from/to parties, tabel line items, total, status badge
+- Tombol `Print / PDF` di halaman detail invoice membuka tab baru
+- `window.print()` di print page untuk save as PDF
+- `@media print` menyembunyikan tombol navigasi
+
+File: [app/portal/invoices/[id]/print/page.tsx](/C:/Users/Administrator/OneDrive/Desktop/saintce/app/portal/invoices/[id]/print/page.tsx)
+
+### Vercel Cron — Daily Billing
+
+Billing automation sekarang jalan otomatis setiap hari 01:00 UTC via Vercel cron:
+- [vercel.json](/C:/Users/Administrator/OneDrive/Desktop/saintce/vercel.json) — konfigurasi cron `0 1 * * *` ke `/api/billing/run`
+- `/api/billing/run` sekarang export `GET` handler (Vercel cron hanya bisa kirim GET)
+- Logic diextract ke shared `runBillingCycle(request, isGet)` sehingga POST (manual trigger admin) dan GET (cron) sama persis hasilnya
+
+### Automation Logs
+
+Setiap billing automation run sekarang di-log ke database:
+- Tabel: `automation_logs` — kolom `run_at`, `invoices_generated`, `invoices_overdue`, `subscriptions_suspended`, `notifications_sent`, `notifications_skipped`, `duration_ms`, `error_message`
+- Log sukses dan log error keduanya di-insert (fire-and-forget)
+- Ditampilkan di billing overview admin: section "Automation run log"
+
+Migration: [20260406_000010_add_automation_and_softdelete.sql](/C:/Users/Administrator/OneDrive/Desktop/saintce/supabase/migrations/20260406_000010_add_automation_and_softdelete.sql)
+
+### MRR Calculation
+
+Billing overview sekarang menampilkan Monthly Recurring Revenue:
+- MRR = sum dari semua subscription `active` (monthly pada harga penuh + yearly dibagi 12)
+- Ditampilkan sebagai stat card highlight (text + border signal color)
+- Query: `subscriptions` aktif dengan field `price` dan `billing_interval`
+
+### Soft Delete
+
+Soft delete sekarang aktif di tiga tabel utama:
+- `clients` — kolom `deleted_at TIMESTAMPTZ`
+- `projects` — kolom `deleted_at TIMESTAMPTZ`
+- `services` — kolom `deleted_at TIMESTAMPTZ`
+- Partial indexes: `WHERE deleted_at IS NULL` untuk performa query
+- RLS policies diupdate untuk exclude soft-deleted rows
+
+### Notes on Projects
+
+Kolom `notes TEXT` ditambahkan ke tabel `projects` untuk catatan internal admin per project.
+
+### Suspension Notifications from Billing
+
+Billing automation sekarang juga kirim email notifikasi saat subscriptions di-suspend:
+- `sendSuspensionNotifications(runAt)` di [lib/billing/server.ts](/C:/Users/Administrator/OneDrive/Desktop/saintce/lib/billing/server.ts)
+- Query subscriptions `suspended` dalam 1 jam terakhir dari `runAt`
+- Dipanggil bersamaan dengan `sendBillingNotifications` di `/api/billing/run`
+
+### Export API
+
+Admin bisa download data CSV:
+- `GET /api/admin/export?type=clients` — export semua clients aktif
+- `GET /api/admin/export?type=invoices` — export semua invoices
+- Auth: Bearer token admin (sama dengan billing run route)
+- Response: `text/csv` dengan `Content-Disposition: attachment`
+- Tombol export ada di header halaman billing overview
+
+File: [app/api/admin/export/route.ts](/C:/Users/Administrator/OneDrive/Desktop/saintce/app/api/admin/export/route.ts)
+
+### Billing Overview Improvements
+
+Halaman `/admin/billing-overview` diupdate:
+- Fix semua class Tailwind v4 (dari `text-[var(--x)]` ke `text-(--x)`)
+- Stat cards sekarang termasuk MRR (highlighted) dan total clients/projects
+- Section baru: Automation run log (dengan durasi per run)
+- Stripe webhook activity section (existing, diperbaiki syntax)
+- Tombol export clients + invoices CSV di header
+
+## 15. Session 5 Additions (2026-04-06)
+
+### OVERVIEW.md Updated
+
+File [OVERVIEW.md](/C:/Users/Administrator/OneDrive/Desktop/saintce/OVERVIEW.md) diperbarui untuk menjelaskan semua fitur terkini:
+- Client portal section dengan cara login dan daftar fitur
+- Email notification table
+- Billing overview dashboard table
+- Automation run log dan export CSV
+
+### Client Payment History
+
+Client bisa lihat riwayat semua pembayaran mereka:
+- Route: `/portal/payments` — daftar pembayaran dengan jumlah, tanggal, referensi, invoice number, dan nama project/service
+- Data via `getPortalPayments()` — RLS memastikan client hanya lihat pembayaran mereka sendiri
+- Nav item "Payments" ditambahkan ke portal navbar (desktop dan mobile)
+- Subscriptions dipindah dari mobile nav (tetap accessible via Projects page)
+
+Files:
+- [app/portal/payments/page.tsx](/C:/Users/Administrator/OneDrive/Desktop/saintce/app/portal/payments/page.tsx) — BARU
+- [lib/portal/data.ts](/C:/Users/Administrator/OneDrive/Desktop/saintce/lib/portal/data.ts) — tambah `PortalPayment` type + `getPortalPayments()`
+- [components/portal/PortalShell.tsx](/C:/Users/Administrator/OneDrive/Desktop/saintce/components/portal/PortalShell.tsx) — update nav links
+
+### Payment Receipt Email
+
+Receipt email yang lebih lengkap dikirim setelah pembayaran sukses via Stripe:
+- `sendPaymentReceiptEmail` — berisi: invoice number, amount, paid date, payment reference (Stripe PI ID), link ke portal
+- Menggantikan `sendPaymentSuccessEmail` di `handleCheckoutSessionCompleted` di `lib/stripe-server.ts`
+- `sendPaymentSuccessEmail` tetap ada di service layer untuk backward compatibility
+
+Files:
+- [lib/notifications/service.ts](/C:/Users/Administrator/OneDrive/Desktop/saintce/lib/notifications/service.ts) — tambah `sendPaymentReceiptEmail`
+- [lib/stripe-server.ts](/C:/Users/Administrator/OneDrive/Desktop/saintce/lib/stripe-server.ts) — import diganti ke `sendPaymentReceiptEmail`
+
+### Notes per Client
+
+Kolom `notes` sudah ada di tabel `clients` (dari migration 000005) dan sudah ter-render di admin clients form sebagai textarea "Internal notes". Tidak ada migration baru diperlukan.
+

@@ -17,10 +17,10 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  /* scroll-behavior: smooth removed — Lenis owns smooth scroll; having both causes double-smooth and white-flash on fast scroll */
   scrollbar-gutter: stable;
   min-height: 100%;
-  background-color: var(--bg-0);
+  background-color: #09090b; /* literal fallback before CSS vars resolve */
   overscroll-behavior-y: none;
 }
 
@@ -29,7 +29,7 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   overflow-x: hidden;
-  background-color: var(--bg-0);
+  background-color: #09090b; /* literal fallback; var(--bg-0) cascades from :root anyway */
   color: var(--text-primary);
   font-family: var(--font-body);
   text-rendering: optimizeLegibility;
@@ -62,6 +62,9 @@ select {
     linear-gradient(180deg, #151518 0%, var(--bg-0) 100%);
   transform: translateZ(0);
   backface-visibility: hidden;
+  /* permanently promote to GPU layer so it's always composited and never redrawn as white during fast scroll */
+  will-change: transform;
+  contain: strict;
 }
 
 .saintce-canvas-glow,
@@ -251,12 +254,16 @@ textarea:-webkit-autofill:focus {
   position: relative;
   width: 100%;
   overflow: hidden;
+  contain: layout style;
 }
 
 .marquee-track {
   display: flex;
   width: max-content;
   animation: marquee 28s linear infinite;
+  /* promote to GPU layer so the continuous translateX animation doesn't trigger CPU repaints */
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .marquee-item {

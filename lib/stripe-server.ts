@@ -3,6 +3,12 @@
 import Stripe from "stripe"
 import { getSupabaseAdmin } from "@/lib/supabase-admin"
 import { getBaseUrl } from "@/lib/site-config"
+import {
+  sendPaymentReceiptEmail,
+  sendPaymentFailedEmail,
+  sendSubscriptionSuspendedEmail,
+  sendSubscriptionReactivatedEmail,
+} from "@/lib/notifications/service"
 
 let stripeClient: Stripe | null = null
 
@@ -633,6 +639,24 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
     null,
     eventId
   )
+
+  // Fire-and-forget: send payment receipt to client
+  void getClientContactByInvoiceId(invoiceId).then((contact) => {
+    if (contact?.email && contact.invoiceNumber) {
+      const piRef = typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : (session.payment_intent?.id ?? null)
+      void sendPaymentReceiptEmail({
+        to: contact.email,
+        clientName: contact.name,
+        invoiceNumber: contact.invoiceNumber,
+        amountLabel: contact.amountLabel ?? "",
+        paidAt: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
+        paymentReference: piRef,
+        portalUrl: `${getBaseUrl()}/portal/invoices`,
+      }).catch(() => undefined)
+    }
+  }).catch(() => undefined)
 }
 
 async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent, eventId: string) {
@@ -709,6 +733,18 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
   }
 
   await admin.from("subscriptions").update({ status: "past_due" } as never).eq("id", invoice.subscription_id)
+
+  // Fire-and-forget: notify client of failed payment
+  void getClientContactByInvoiceId(invoiceId).then((contact) => {
+    if (contact?.email && contact.invoiceNumber) {
+      void sendPaymentFailedEmail({
+        to: contact.email,
+        clientName: contact.name,
+        invoiceNumber: contact.invoiceNumber,
+        amountLabel: contact.amountLabel ?? "",
+      }).catch(() => undefined)
+    }
+  }).catch(() => undefined)
 }
 
 function mapStripeSubscriptionStatus(status: Stripe.Subscription.Status) {
@@ -731,10 +767,19 @@ function mapStripeSubscriptionStatus(status: Stripe.Subscription.Status) {
 async function handleStripeSubscriptionUpdated(subscription: Stripe.Subscription) {
   const admin = getSupabaseAdmin()
   const internalSubscriptionId = subscription.metadata.internal_subscription_id
+  const newStatus = mapStripeSubscriptionStatus(subscription.status)
+
+  // Capture previous status to detect transitions
+  const prevQuery = internalSubscriptionId
+    ? admin.from("subscriptions").select("id, status").eq("id", internalSubscriptionId).maybeSingle()
+    : admin.from("subscriptions").select("id, status").eq("stripe_subscription_id", subscription.id).maybeSingle()
+  const { data: prevRow } = await prevQuery
+  const prevStatus = (prevRow as Record<string, unknown> | null)?.status as string | undefined
+  const subscriptionDbId = (prevRow as Record<string, unknown> | null)?.id as string | undefined
 
   let query = admin.from("subscriptions").update({
     stripe_subscription_id: subscription.id,
-    status: mapStripeSubscriptionStatus(subscription.status),
+    status: newStatus,
   } as never)
 
   if (internalSubscriptionId) {
@@ -744,6 +789,135 @@ async function handleStripeSubscriptionUpdated(subscription: Stripe.Subscription
   }
 
   await query
+
+  const resolvedId = internalSubscriptionId ?? subscriptionDbId
+  if (!resolvedId) return
+
+  // Fire-and-forget notifications for status transitions
+  if (newStatus === "suspended" && prevStatus !== "suspended") {
+    void getClientContactBySubscriptionId(resolvedId).then((contact) => {
+      if (contact?.email) {
+        void sendSubscriptionSuspendedEmail({
+          to: contact.email,
+          clientName: contact.name,
+          projectName: contact.projectName ?? "",
+          serviceName: contact.serviceName ?? "",
+        }).catch(() => undefined)
+      }
+    }).catch(() => undefined)
+  }
+
+  if (newStatus === "active" && prevStatus === "suspended") {
+    void getClientContactBySubscriptionId(resolvedId).then((contact) => {
+      if (contact?.email) {
+        void sendSubscriptionReactivatedEmail({
+          to: contact.email,
+          clientName: contact.name,
+          projectName: contact.projectName ?? "",
+          serviceName: contact.serviceName ?? "",
+        }).catch(() => undefined)
+      }
+    }).catch(() => undefined)
+  }
+}
+
+// -------------------------------------------------------
+// Notification helpers — fetch client contact info by
+// invoiceId or subscriptionId for notification dispatch.
+// All failures are swallowed so notifications never break
+// the main payment sync flow.
+// -------------------------------------------------------
+
+interface ClientContact {
+  email: string
+  name: string
+  invoiceNumber?: string
+  amountLabel?: string
+  projectName?: string
+  serviceName?: string
+}
+
+async function getClientContactByInvoiceId(invoiceId: string): Promise<ClientContact | null> {
+  try {
+    const admin = getSupabaseAdmin()
+    const { data, error } = await admin
+      .from("invoices")
+      .select(`
+        invoice_number, amount,
+        subscription:subscriptions(
+          service:services(
+            name,
+            project:projects(
+              name,
+              client:clients(name, email)
+            )
+          )
+        )
+      `)
+      .eq("id", invoiceId)
+      .single()
+
+    if (error || !data) return null
+
+    const row = data as Record<string, unknown>
+    const sub = Array.isArray(row.subscription) ? row.subscription[0] : row.subscription as Record<string, unknown> | undefined
+    const svc = sub ? (Array.isArray(sub.service) ? sub.service[0] : sub.service) as Record<string, unknown> | undefined : undefined
+    const proj = svc ? (Array.isArray(svc.project) ? svc.project[0] : svc.project) as Record<string, unknown> | undefined : undefined
+    const client = proj ? (Array.isArray(proj.client) ? proj.client[0] : proj.client) as Record<string, unknown> | undefined : undefined
+
+    if (!client?.email) return null
+
+    const amount = Number(row.amount ?? 0)
+    const amountLabel = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount)
+
+    return {
+      email: String(client.email),
+      name: String(client.name ?? "Client"),
+      invoiceNumber: String(row.invoice_number ?? ""),
+      amountLabel,
+      projectName: String(proj?.name ?? ""),
+      serviceName: String(svc?.name ?? ""),
+    }
+  } catch {
+    return null
+  }
+}
+
+async function getClientContactBySubscriptionId(subscriptionId: string): Promise<ClientContact | null> {
+  try {
+    const admin = getSupabaseAdmin()
+    const { data, error } = await admin
+      .from("subscriptions")
+      .select(`
+        service:services(
+          name,
+          project:projects(
+            name,
+            client:clients(name, email)
+          )
+        )
+      `)
+      .eq("id", subscriptionId)
+      .single()
+
+    if (error || !data) return null
+
+    const row = data as Record<string, unknown>
+    const svc = (Array.isArray(row.service) ? row.service[0] : row.service) as Record<string, unknown> | undefined
+    const proj = svc ? (Array.isArray(svc.project) ? svc.project[0] : svc.project) as Record<string, unknown> | undefined : undefined
+    const client = proj ? (Array.isArray(proj.client) ? proj.client[0] : proj.client) as Record<string, unknown> | undefined : undefined
+
+    if (!client?.email) return null
+
+    return {
+      email: String(client.email),
+      name: String(client.name ?? "Client"),
+      projectName: String(proj?.name ?? ""),
+      serviceName: String(svc?.name ?? ""),
+    }
+  } catch {
+    return null
+  }
 }
 
 async function processStripeEvent(event: Stripe.Event) {
@@ -811,5 +985,74 @@ export async function handleStripeWebhookRequest(request: Request): Promise<Stri
       error instanceof Error ? error.message : "Unknown Stripe webhook processing error."
     )
     throw error
+  }
+}
+
+// -------------------------------------------------------
+// Portal checkout: same as admin checkout but redirects
+// back to the client portal instead of admin panel.
+// The invoiceId ownership check must be done by the caller
+// before calling this function (verify client owns invoice).
+// -------------------------------------------------------
+export async function createPortalStripeCheckoutSession(invoiceId: string) {
+  const invoice = await getInvoiceCheckoutContext(invoiceId)
+
+  if (invoice.status === "paid" || invoice.status === "void") {
+    throw new Error("This invoice has already been paid or is void.")
+  }
+
+  const client = invoice.subscription?.service?.project?.client
+  if (!client) {
+    throw new Error("Invoice is missing client context.")
+  }
+
+  const stripe = getStripeClient()
+  const admin = getSupabaseAdmin()
+  const customerId = await ensureStripeCustomer(client)
+
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    customer: customerId,
+    success_url: `${getBaseUrl()}/portal/invoices/${invoice.id}?checkout=success`,
+    cancel_url: `${getBaseUrl()}/portal/invoices/${invoice.id}?checkout=cancelled`,
+    metadata: {
+      invoice_id: invoice.id,
+      subscription_id: invoice.subscription_id,
+      client_id: client.id,
+    },
+    payment_intent_data: {
+      metadata: {
+        invoice_id: invoice.id,
+        subscription_id: invoice.subscription_id,
+        client_id: client.id,
+      },
+    },
+    line_items: [
+      {
+        quantity: 1,
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: invoice.subscription?.service?.name || `Invoice ${invoice.invoice_number}`,
+            description: `Invoice ${invoice.invoice_number} — ${invoice.subscription?.service?.project?.name ?? ""}`,
+          },
+          unit_amount: Math.round(Number(invoice.amount) * 100),
+        },
+      },
+    ],
+  })
+
+  const { error } = await admin
+    .from("invoices")
+    .update({ stripe_checkout_session_id: session.id } as never)
+    .eq("id", invoice.id)
+
+  if (error) {
+    throw error
+  }
+
+  return {
+    id: session.id,
+    url: session.url,
   }
 }
