@@ -1,5 +1,5 @@
 const items = [
-  "ORION CONTROL",
+  "SAINTCE CONTROL",
   "SKEUOMORPHIC UI",
   "CLIENT REGISTRY",
   "LIVE CMS",

@@ -115,17 +115,17 @@ export default function ContactForm() {
 
   return (
     <div className="mx-auto max-w-[880px]">
-      <div className="orion-panel p-6 md:p-10">
+      <div className="saintce-panel p-6 md:p-10">
         <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
           <div>
             <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-[var(--signal)]">Inquiry</p>
             <h1 className="mt-5 font-display text-[clamp(2.4rem,5vw,4.6rem)] leading-[1.02] tracking-[-0.04em] text-[var(--text-primary)]">
-              Start an Orion deployment.
+              Start an Saintce deployment.
             </h1>
             <p className="mt-5 text-[0.98rem] leading-[1.8] text-[var(--muted)]">
-              Use this form for website rebuilds, admin control surfaces, or a broader Orion rollout.
+              Use this form for website rebuilds, admin control surfaces, or a broader Saintce rollout.
             </p>
-            <div className="orion-inset mt-8 rounded-[26px] p-5">
+            <div className="saintce-inset mt-8 rounded-[26px] p-5">
               <p className="text-sm uppercase tracking-[0.16em] text-[var(--muted)]">Direct line</p>
               <a
                 href={`mailto:${siteConfig.contact.email}`}
@@ -141,38 +141,38 @@ export default function ContactForm() {
               placeholder="Name *"
               value={form.name}
               onChange={(e) => handleFieldChange("name", e.target.value)}
-              className="orion-input"
+              className="saintce-input"
             />
             <input
               placeholder="Email *"
               value={form.email}
               onChange={(e) => handleFieldChange("email", e.target.value)}
-              className="orion-input"
+              className="saintce-input"
             />
             <input
               placeholder="Company"
               value={form.company}
               onChange={(e) => handleFieldChange("company", e.target.value)}
-              className="orion-input"
+              className="saintce-input"
             />
             <input
               placeholder="Website"
               value={form.website}
               onChange={(e) => handleFieldChange("website", e.target.value)}
-              className="orion-input"
+              className="saintce-input"
             />
             <div className="grid gap-4 md:grid-cols-2">
               <input
                 placeholder="Timeline"
                 value={form.timeline}
                 onChange={(e) => handleFieldChange("timeline", e.target.value)}
-                className="orion-input"
+                className="saintce-input"
               />
               <input
                 placeholder="Budget"
                 value={form.budget}
                 onChange={(e) => handleFieldChange("budget", e.target.value)}
-                className="orion-input"
+                className="saintce-input"
               />
             </div>
             <textarea
@@ -180,7 +180,7 @@ export default function ContactForm() {
               rows={6}
               value={form.overview}
               onChange={(e) => handleFieldChange("overview", e.target.value)}
-              className="orion-input min-h-[180px]"
+              className="saintce-input min-h-[180px]"
             />
 
             {(error || success) && (
@@ -190,12 +190,12 @@ export default function ContactForm() {
             )}
 
             <div className="flex flex-wrap gap-4 pt-2">
-              <button onClick={handleSubmit} disabled={loading || success} className="orion-button">
+              <button onClick={handleSubmit} disabled={loading || success} className="saintce-button">
                 {loading ? "Sending..." : success ? "Sent" : "Send inquiry"}
               </button>
               <button
                 onClick={handleBack}
-                className="orion-button orion-button--ghost"
+                className="saintce-button saintce-button--ghost"
                 disabled={loading || success}
               >
                 Cancel

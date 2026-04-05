@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer className="relative py-16">
       <Container>
-        <div className="orion-panel flex flex-col justify-between gap-10 px-8 py-10 md:flex-row md:items-center md:px-10">
+        <div className="saintce-panel flex flex-col justify-between gap-10 px-8 py-10 md:flex-row md:items-center md:px-10">
           <div>
             <h3 className="font-display text-lg tracking-[0.2em] text-[var(--text-primary)]">
               {siteConfig.brand.name}

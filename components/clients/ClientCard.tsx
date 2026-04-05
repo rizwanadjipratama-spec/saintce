@@ -38,7 +38,7 @@ function ClientCardComponent({ client }: Props) {
 
   return (
     <Wrapper isPrivate={isPrivate} href={client.link}>
-      <article className="orion-panel orion-panel--inset flex h-full flex-col justify-between p-6 transition-transform duration-300 hover:-translate-y-1">
+      <article className="saintce-panel saintce-panel--inset flex h-full flex-col justify-between p-6 transition-transform duration-300 hover:-translate-y-1">
         <div>
           <div className="flex items-center justify-between gap-4">
             <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">

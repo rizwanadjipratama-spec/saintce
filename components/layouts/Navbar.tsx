@@ -36,7 +36,7 @@ export default function Navbar() {
 
   return (
     <header className="fixed top-0 left-0 z-[100] w-full px-4 pt-4 md:px-8">
-      <div className="orion-nav mx-auto flex h-[78px] max-w-[1460px] items-center justify-between px-6 md:px-8">
+      <div className="saintce-nav mx-auto flex h-[78px] max-w-[1460px] items-center justify-between px-6 md:px-8">
         <div className="hidden items-center text-sm text-[var(--muted-strong)] md:flex">
           <AnimatePresence mode="wait">
             {isRouteMode ? (
@@ -143,7 +143,7 @@ export default function Navbar() {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: ANIMATION.durationMedium, ease: ANIMATION.easing }}
             style={{ willChange: "transform, opacity" }}
-            className="orion-nav mx-4 mt-4 overflow-hidden md:hidden"
+            className="saintce-nav mx-4 mt-4 overflow-hidden md:hidden"
           >
             <div className="flex flex-col gap-6 px-6 py-10 text-lg text-[var(--muted-strong)]">
               {itemLinks.map((item) => (

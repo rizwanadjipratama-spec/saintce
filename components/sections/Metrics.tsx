@@ -71,7 +71,7 @@ export default function Metrics() {
                 delay: index * 0.06,
                 ease: ANIMATION.easing,
               }}
-              className="orion-panel flex flex-col justify-between p-6"
+              className="saintce-panel flex flex-col justify-between p-6"
               style={{ willChange: "transform, opacity" }}
             >
               <div className="font-display text-[clamp(2.8rem,6vw,4.8rem)] text-[var(--text-primary)]">

@@ -18,8 +18,8 @@ export default function Button({
     <button
       {...props}
       className={clsx(
-        "orion-button",
-        variant === "ghost" && "orion-button--ghost",
+        "saintce-button",
+        variant === "ghost" && "saintce-button--ghost",
         className
       )}
     >

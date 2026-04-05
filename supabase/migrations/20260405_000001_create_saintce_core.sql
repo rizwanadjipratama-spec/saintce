@@ -131,8 +131,8 @@ insert into public.about_section (singleton_key, title, subtitle, paragraph1, pa
 values (
   true,
   'Design the system before scaling the company.',
-  'Orion replaces scattered surfaces with one controllable operating layer.',
-  'This build now reads from the live About CMS when content exists, so the public story can be managed directly from Orion Control instead of being hardcoded across the frontend.',
+  'Saintce replaces scattered surfaces with one controllable operating layer.',
+  'This build now reads from the live About CMS when content exists, so the public story can be managed directly from Saintce Control instead of being hardcoded across the frontend.',
   'The refactor removes duplicated admin flows and centralizes the data contract, which gives you a cleaner path to expand toward a fuller ERP-style back office.',
   'Every visible surface is moving toward one rule: fewer abstractions, fewer duplicate queries, and tighter control over performance and behavior.'
 )

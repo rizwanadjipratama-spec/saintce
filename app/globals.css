@@ -66,12 +66,12 @@ body::after {
   z-index: 0;
 }
 
-.orion-body > * {
+.saintce-body > * {
   position: relative;
   z-index: 1;
 }
 
-.orion-page-shell {
+.saintce-page-shell {
   padding-top: var(--site-header-offset);
 }
 
@@ -93,10 +93,10 @@ section {
   scroll-margin-top: 112px;
 }
 
-.orion-nav,
-.orion-panel,
-.orion-inset,
-.orion-hero {
+.saintce-nav,
+.saintce-panel,
+.saintce-inset,
+.saintce-hero {
   border: 1px solid var(--border-soft);
   background: var(--panel);
   box-shadow:
@@ -106,21 +106,21 @@ section {
   backdrop-filter: blur(22px);
 }
 
-.orion-nav {
+.saintce-nav {
   border-radius: 28px;
 }
 
-.orion-panel {
+.saintce-panel {
   border-radius: 32px;
 }
 
-.orion-panel--inset {
+.saintce-panel--inset {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02)),
     linear-gradient(180deg, rgba(35, 35, 39, 0.94), rgba(17, 17, 20, 0.96));
 }
 
-.orion-inset {
+.saintce-inset {
   background:
     linear-gradient(180deg, rgba(0, 0, 0, 0.22), rgba(255, 255, 255, 0.02)),
     rgba(7, 7, 10, 0.56);
@@ -129,18 +129,18 @@ section {
     inset 0 -1px 0 rgba(255, 255, 255, 0.03);
 }
 
-.orion-hero {
+.saintce-hero {
   padding: clamp(1.4rem, 2vw, 2rem);
   border-radius: 38px;
 }
 
-.orion-hero-shell {
+.saintce-hero-shell {
   min-height: max(42rem, calc(100vh - var(--site-header-offset)));
   min-height: max(42rem, calc(100lvh - var(--site-header-offset)));
   padding-top: clamp(1.5rem, 3vw, 2.25rem);
 }
 
-.orion-button {
+.saintce-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -164,24 +164,24 @@ section {
   will-change: transform;
 }
 
-.orion-button:hover:not(:disabled) {
+.saintce-button:hover:not(:disabled) {
   transform: translateY(-1px);
   filter: brightness(1.02);
 }
 
-.orion-button:disabled {
+.saintce-button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
 
-.orion-button--ghost {
+.saintce-button--ghost {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02)),
     rgba(10, 10, 12, 0.4);
   color: var(--text-primary);
 }
 
-.orion-input {
+.saintce-input {
   width: 100%;
   border-radius: 22px;
   border: 1px solid var(--border-soft);
@@ -196,11 +196,11 @@ section {
   transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
-.orion-input::placeholder {
+.saintce-input::placeholder {
   color: var(--muted);
 }
 
-.orion-input:focus {
+.saintce-input:focus {
   outline: none;
   border-color: rgba(245, 203, 140, 0.45);
   box-shadow:
@@ -263,15 +263,15 @@ textarea:-webkit-autofill:focus {
     --site-header-offset: 104px;
   }
 
-  .orion-nav {
+  .saintce-nav {
     border-radius: 24px;
   }
 
-  .orion-panel {
+  .saintce-panel {
     border-radius: 28px;
   }
 
-  .orion-hero-shell {
+  .saintce-hero-shell {
     min-height: auto;
     padding-top: 1rem;
   }

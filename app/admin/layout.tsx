@@ -25,7 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-transparent text-[var(--text-primary)]">
       <div className="grid min-h-screen lg:grid-cols-[300px_1fr]">
         <aside className="border-r border-[var(--border-soft)] px-5 py-5">
-          <div className="orion-panel flex h-full flex-col p-5">
+          <div className="saintce-panel flex h-full flex-col p-5">
             <div className="border-b border-[var(--border-soft)] pb-5">
               <p className="font-display text-xs tracking-[0.28em] text-[var(--text-primary)]">
                 {siteConfig.brand.adminName}
@@ -59,13 +59,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </nav>
 
             <div className="mt-auto border-t border-[var(--border-soft)] pt-5 text-sm text-[var(--muted)]">
-              Single shell. Cleaner queries. Orion edition.
+              Single shell. Cleaner queries. Saintce edition.
             </div>
           </div>
         </aside>
 
         <main className="px-5 py-5">
-          <div className="orion-panel min-h-full p-6 md:p-8">{children}</div>
+          <div className="saintce-panel min-h-full p-6 md:p-8">{children}</div>
         </main>
       </div>
     </div>

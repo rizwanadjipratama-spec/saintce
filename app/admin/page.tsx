@@ -58,7 +58,7 @@ export default function AdminOverviewPage() {
   const recentClients = clients.slice(0, 5)
 
   if (loading) {
-    return <div className="text-[var(--muted)]">Loading Orion Control...</div>
+    return <div className="text-[var(--muted)]">Loading Saintce Control...</div>
   }
 
   return (
@@ -67,7 +67,7 @@ export default function AdminOverviewPage() {
         <div>
           <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-[var(--signal)]">Overview</p>
           <h1 className="mt-4 font-display text-[clamp(2.5rem,5vw,4.8rem)] leading-none tracking-[-0.04em]">
-            Orion Control
+            Saintce Control
           </h1>
           <p className="mt-4 max-w-2xl text-[var(--muted)]">
             This panel is now the command center for the website, client registry, and live About content.
@@ -75,10 +75,10 @@ export default function AdminOverviewPage() {
         </div>
 
         <div className="flex gap-3">
-          <Link href="/admin/clients" className="orion-button">
+          <Link href="/admin/clients" className="saintce-button">
             Manage clients
           </Link>
-          <Link href="/admin/about" className="orion-button orion-button--ghost">
+          <Link href="/admin/about" className="saintce-button saintce-button--ghost">
             Edit about
           </Link>
         </div>
@@ -93,7 +93,7 @@ export default function AdminOverviewPage() {
           { label: "Private clients", value: summary.private },
           { label: "About content", value: aboutReady ? "Live" : "Draft" },
         ].map((card) => (
-          <div key={card.label} className="orion-inset rounded-[24px] p-5">
+          <div key={card.label} className="saintce-inset rounded-[24px] p-5">
             <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">{card.label}</p>
             <p className="mt-4 font-display text-4xl text-[var(--text-primary)]">{card.value}</p>
           </div>
@@ -101,7 +101,7 @@ export default function AdminOverviewPage() {
       </div>
 
       <div className="mt-8 grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-        <section className="orion-inset rounded-[28px] p-6">
+        <section className="saintce-inset rounded-[28px] p-6">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-2xl text-[var(--text-primary)]">Recent clients</h2>
             <Link href="/admin/clients" className="text-sm text-[var(--muted-strong)]">
@@ -131,10 +131,10 @@ export default function AdminOverviewPage() {
           </div>
         </section>
 
-        <section className="orion-inset rounded-[28px] p-6">
+        <section className="saintce-inset rounded-[28px] p-6">
           <h2 className="font-display text-2xl text-[var(--text-primary)]">Refactor wins</h2>
           <div className="mt-6 space-y-4 text-[0.98rem] leading-[1.8] text-[var(--muted)]">
-            <p>Branding is centralized under Orion instead of being split across multiple legacy names.</p>
+            <p>Branding is centralized under Saintce instead of being split across multiple legacy names.</p>
             <p>Client data access is shared through one library, reducing duplicate query logic across public and admin surfaces.</p>
             <p>Old dashboard duplication is removed so admin behavior has one obvious place to evolve from here.</p>
           </div>

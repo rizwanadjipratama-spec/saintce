@@ -88,7 +88,7 @@ export default function AdminClientsPage() {
   }, [loadClients, router])
 
   useEffect(() => {
-    const unsubscribe = subscribeClientsRealtime("orion-clients", () => {
+    const unsubscribe = subscribeClientsRealtime("saintce-clients", () => {
       void loadClients()
     })
 
@@ -183,7 +183,7 @@ export default function AdminClientsPage() {
           { label: "Private", value: summary.private },
           { label: "Archived", value: summary.archived },
         ].map((card) => (
-          <div key={card.label} className="orion-inset rounded-[24px] p-5">
+          <div key={card.label} className="saintce-inset rounded-[24px] p-5">
             <p className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">{card.label}</p>
             <p className="mt-3 font-display text-4xl">{card.value}</p>
           </div>
@@ -191,36 +191,36 @@ export default function AdminClientsPage() {
       </div>
 
       <div className="mt-8 grid gap-5 xl:grid-cols-[0.92fr_1.08fr]">
-        <section className="orion-inset rounded-[28px] p-6">
+        <section className="saintce-inset rounded-[28px] p-6">
           <div className="grid gap-4">
             <input
               placeholder="Client name"
               value={form.name}
               onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-              className="orion-input"
+              className="saintce-input"
             />
             <input
               placeholder="Category"
               value={form.category}
               onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
-              className="orion-input"
+              className="saintce-input"
             />
             <input
               placeholder="Project link"
               value={form.link}
               onChange={(e) => setForm((prev) => ({ ...prev, link: e.target.value }))}
-              className="orion-input"
+              className="saintce-input"
             />
             <textarea
               placeholder="Description"
               value={form.description}
               onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-              className="orion-input min-h-[180px]"
+              className="saintce-input min-h-[180px]"
             />
             <select
               value={form.status}
               onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value as ClientStatus }))}
-              className="orion-input"
+              className="saintce-input"
             >
               <option value="live">Live</option>
               <option value="beta">Beta</option>
@@ -231,11 +231,11 @@ export default function AdminClientsPage() {
             {message && <p className="text-[var(--muted-strong)]">{message}</p>}
 
             <div className="flex flex-wrap gap-3">
-              <button onClick={handleSubmit} disabled={submitting} className="orion-button">
+              <button onClick={handleSubmit} disabled={submitting} className="saintce-button">
                 {submitting ? "Saving..." : editingId ? "Update client" : "Create client"}
               </button>
               {editingId && (
-                <button onClick={resetForm} className="orion-button orion-button--ghost">
+                <button onClick={resetForm} className="saintce-button saintce-button--ghost">
                   Cancel edit
                 </button>
               )}
@@ -243,7 +243,7 @@ export default function AdminClientsPage() {
           </div>
         </section>
 
-        <section className="orion-inset rounded-[28px] p-6">
+        <section className="saintce-inset rounded-[28px] p-6">
           <div className="space-y-3">
             {clients.map((client) => (
               <div
@@ -258,10 +258,10 @@ export default function AdminClientsPage() {
                 </div>
 
                 <div className="flex gap-3">
-                  <button onClick={() => handleEdit(client)} className="orion-button orion-button--ghost">
+                  <button onClick={() => handleEdit(client)} className="saintce-button saintce-button--ghost">
                     Edit
                   </button>
-                  <button onClick={() => handleDelete(client.id)} className="orion-button orion-button--ghost">
+                  <button onClick={() => handleDelete(client.id)} className="saintce-button saintce-button--ghost">
                     Delete
                   </button>
                 </div>

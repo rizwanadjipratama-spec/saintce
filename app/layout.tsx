@@ -46,7 +46,7 @@ export default function RootLayout({
       lang="en"
       className={`${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}
     >
-      <body className="orion-body antialiased relative">
+      <body className="saintce-body antialiased relative">
         <MouseLight />
         <SmoothScroll>
           {children}

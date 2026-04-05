@@ -10,7 +10,7 @@ export default function SiteLayout({
   return (
     <>
       <Navbar />
-      <main className="orion-page-shell relative z-10">
+      <main className="saintce-page-shell relative z-10">
         <SiteRouteTransition>{children}</SiteRouteTransition>
       </main>
       <Footer />

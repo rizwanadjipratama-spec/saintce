@@ -15,7 +15,7 @@ export default function ClientSearch({ search, setSearch }: ClientSearchProps) {
         autoComplete="off"
         aria-label="Search client"
         onChange={(e) => setSearch(e.target.value)}
-        className="orion-input w-full px-6 py-4"
+        className="saintce-input w-full px-6 py-4"
       />
     </div>
   )

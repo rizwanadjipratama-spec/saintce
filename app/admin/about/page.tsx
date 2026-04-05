@@ -50,7 +50,7 @@ export default function AdminAboutPage() {
 
   useEffect(() => {
     const channel = supabase
-      .channel("orion-about")
+      .channel("saintce-about")
       .on("postgres_changes", { event: "*", schema: "public", table: "about_section" }, () => {
         void load()
       })
@@ -93,46 +93,46 @@ export default function AdminAboutPage() {
         </h1>
       </div>
 
-      <div className="mt-8 orion-inset rounded-[28px] p-6">
+      <div className="mt-8 saintce-inset rounded-[28px] p-6">
         <div className="grid gap-4">
           <input
             value={data.title}
             onChange={(e) => setData((prev) => (prev ? { ...prev, title: e.target.value } : prev))}
-            className="orion-input"
+            className="saintce-input"
             placeholder="Headline"
           />
           <input
             value={data.subtitle}
             onChange={(e) => setData((prev) => (prev ? { ...prev, subtitle: e.target.value } : prev))}
-            className="orion-input"
+            className="saintce-input"
             placeholder="Subtitle"
           />
           <textarea
             rows={5}
             value={data.paragraph1}
             onChange={(e) => setData((prev) => (prev ? { ...prev, paragraph1: e.target.value } : prev))}
-            className="orion-input"
+            className="saintce-input"
             placeholder="Paragraph 1"
           />
           <textarea
             rows={5}
             value={data.paragraph2}
             onChange={(e) => setData((prev) => (prev ? { ...prev, paragraph2: e.target.value } : prev))}
-            className="orion-input"
+            className="saintce-input"
             placeholder="Paragraph 2"
           />
           <textarea
             rows={5}
             value={data.paragraph3}
             onChange={(e) => setData((prev) => (prev ? { ...prev, paragraph3: e.target.value } : prev))}
-            className="orion-input"
+            className="saintce-input"
             placeholder="Paragraph 3"
           />
 
           {message && <p className="text-[var(--muted-strong)]">{message}</p>}
 
           <div>
-            <button onClick={handleSave} disabled={saving} className="orion-button">
+            <button onClick={handleSave} disabled={saving} className="saintce-button">
               {saving ? "Saving..." : "Save About content"}
             </button>
           </div>

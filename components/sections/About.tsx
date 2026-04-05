@@ -17,10 +17,10 @@ export default async function About() {
             <p className="mt-6 max-w-xl text-lg leading-[1.7] text-[var(--muted)]">{content.subtitle}</p>
           </div>
 
-          <div className="orion-panel p-6 md:p-8">
+          <div className="saintce-panel p-6 md:p-8">
             <div className="grid gap-5 md:grid-cols-3">
               {[content.paragraph1, content.paragraph2, content.paragraph3].map((paragraph, index) => (
-                <div key={index} className="orion-inset rounded-[24px] p-5">
+                <div key={index} className="saintce-inset rounded-[24px] p-5">
                   <p className="font-mono text-[0.72rem] uppercase tracking-[0.18em] text-[var(--muted)]">
                     Node 0{index + 1}
                   </p>

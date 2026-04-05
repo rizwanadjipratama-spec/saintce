@@ -43,7 +43,7 @@ export default function Process() {
 
         <div className="grid gap-5 lg:grid-cols-4">
           {steps.map((step) => (
-            <article key={step.number} className="orion-panel orion-panel--inset p-6">
+            <article key={step.number} className="saintce-panel saintce-panel--inset p-6">
               <p className="font-mono text-[0.76rem] uppercase tracking-[0.16em] text-[var(--signal)]">
                 {step.number}
               </p>

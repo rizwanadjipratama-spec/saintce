@@ -12,9 +12,9 @@ export default function Hero() {
   }, [router])
 
   return (
-    <section className="orion-hero-shell relative flex flex-col justify-center">
+    <section className="saintce-hero-shell relative flex flex-col justify-center">
       <div className="mx-auto w-full max-w-[1400px] px-6 md:px-10">
-        <div className="orion-hero">
+        <div className="saintce-hero">
           <div className="grid gap-12 lg:grid-cols-[1.25fr_0.75fr]">
             <div>
               <p className="mb-6 font-mono text-[0.75rem] uppercase tracking-[0.18em] text-[var(--signal)]">
@@ -30,33 +30,33 @@ export default function Hero() {
               </p>
 
               <div className="mt-10 flex flex-wrap gap-4">
-                <button onClick={handleContactRoute} className="orion-button">
+                <button onClick={handleContactRoute} className="saintce-button">
                   Launch a Build
                 </button>
-                <a href="/admin" className="orion-button orion-button--ghost">
-                  Open Orion Control
+                <a href="/admin" className="saintce-button saintce-button--ghost">
+                  Open Saintce Control
                 </a>
               </div>
             </div>
 
-            <div className="orion-panel orion-panel--inset flex flex-col justify-between gap-8 p-6 md:p-8">
+            <div className="saintce-panel saintce-panel--inset flex flex-col justify-between gap-8 p-6 md:p-8">
               <div>
                 <p className="font-mono text-[0.72rem] uppercase tracking-[0.18em] text-[var(--muted)]">
                   Command Surface
                 </p>
                 <div className="mt-6 grid gap-4">
-                  <div className="orion-inset rounded-[24px] p-5">
+                  <div className="saintce-inset rounded-[24px] p-5">
                     <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">Admin Coverage</p>
                     <p className="mt-2 text-3xl font-display text-[var(--text-primary)]">Clients, CMS, Ops</p>
                   </div>
                   <div className="grid gap-4 md:grid-cols-2">
-                    <div className="orion-inset rounded-[22px] p-5">
+                    <div className="saintce-inset rounded-[22px] p-5">
                       <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">Performance</p>
                       <p className="mt-2 text-lg text-[var(--text-primary)]">
                         GPU-safe motion, cleaned timers, controlled subscriptions.
                       </p>
                     </div>
-                    <div className="orion-inset rounded-[22px] p-5">
+                    <div className="saintce-inset rounded-[22px] p-5">
                       <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">Architecture</p>
                       <p className="mt-2 text-lg text-[var(--text-primary)]">
                         Centralized data access with less duplication and cleaner state flow.

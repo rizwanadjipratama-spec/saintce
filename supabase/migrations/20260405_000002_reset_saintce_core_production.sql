@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgcrypto;
 create extension if not exists citext;
 
-drop publication if exists orion_realtime_tmp;
+drop publication if exists saintce_realtime_tmp;
 
 drop table if exists public.audit_logs cascade;
 drop table if exists public.admin_users cascade;
@@ -70,7 +70,7 @@ create table public.admin_users (
 create index admin_users_role_idx on public.admin_users (role);
 create index admin_users_active_idx on public.admin_users (is_active);
 
-create or replace function public.is_orion_admin()
+create or replace function public.is_saintce_admin()
 returns boolean
 language sql
 stable
@@ -181,15 +181,15 @@ create policy "admin_users_self_read"
 on public.admin_users
 for select
 to authenticated
-using (user_id = auth.uid() or public.is_orion_admin());
+using (user_id = auth.uid() or public.is_saintce_admin());
 
 drop policy if exists "admin_users_admin_manage" on public.admin_users;
 create policy "admin_users_admin_manage"
 on public.admin_users
 for all
 to authenticated
-using (public.is_orion_admin())
-with check (public.is_orion_admin());
+using (public.is_saintce_admin())
+with check (public.is_saintce_admin());
 
 drop policy if exists "clients_public_read" on public.clients;
 create policy "clients_public_read"
@@ -203,8 +203,8 @@ create policy "clients_admin_manage"
 on public.clients
 for all
 to authenticated
-using (public.is_orion_admin())
-with check (public.is_orion_admin());
+using (public.is_saintce_admin())
+with check (public.is_saintce_admin());
 
 drop policy if exists "about_public_read" on public.about_section;
 create policy "about_public_read"
@@ -218,15 +218,15 @@ create policy "about_admin_manage"
 on public.about_section
 for all
 to authenticated
-using (public.is_orion_admin())
-with check (public.is_orion_admin());
+using (public.is_saintce_admin())
+with check (public.is_saintce_admin());
 
 drop policy if exists "audit_logs_admin_read" on public.audit_logs;
 create policy "audit_logs_admin_read"
 on public.audit_logs
 for select
 to authenticated
-using (public.is_orion_admin());
+using (public.is_saintce_admin());
 
 insert into public.about_section (
   singleton_key,
@@ -239,8 +239,8 @@ insert into public.about_section (
 values (
   true,
   'Design the system before scaling the company.',
-  'Orion replaces scattered surfaces with one controllable operating layer.',
-  'This build now reads from the live About CMS when content exists, so the public story can be managed directly from Orion Control instead of being hardcoded across the frontend.',
+  'Saintce replaces scattered surfaces with one controllable operating layer.',
+  'This build now reads from the live About CMS when content exists, so the public story can be managed directly from Saintce Control instead of being hardcoded across the frontend.',
   'The refactor removes duplicated admin flows and centralizes the data contract, which gives you a cleaner path to expand toward a fuller ERP-style back office.',
   'Every visible surface is moving toward one rule: fewer abstractions, fewer duplicate queries, and tighter control over performance and behavior.'
 );

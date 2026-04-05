@@ -3,12 +3,12 @@
 This project now includes two SQL paths:
 
 1. Incremental baseline:
-- `supabase/migrations/20260405_000001_create_orion_core.sql`
+- `supabase/migrations/20260405_000001_create_saintce_core.sql`
 
 2. Full destructive rebuild:
-- `supabase/migrations/20260405_000002_reset_orion_core_production.sql`
+- `supabase/migrations/20260405_000002_reset_saintce_core_production.sql`
 
-The destructive rebuild is the recommended path if you want to throw away the old schema and recreate Orion from a clean production-focused base.
+The destructive rebuild is the recommended path if you want to throw away the old schema and recreate Saintce from a clean production-focused base.
 
 It includes:
 
@@ -30,8 +30,8 @@ supabase db push
 
 If you prefer the dashboard SQL editor, run:
 
-- [`supabase/migrations/20260405_000001_create_orion_core.sql`](C:/Users/Administrator/OneDrive/Desktop/ajcorp/supabase/migrations/20260405_000001_create_orion_core.sql)
-- [`supabase/migrations/20260405_000002_reset_orion_core_production.sql`](C:/Users/Administrator/OneDrive/Desktop/ajcorp/supabase/migrations/20260405_000002_reset_orion_core_production.sql)
+- [`supabase/migrations/20260405_000001_create_saintce_core.sql`](C:/Users/Administrator/OneDrive/Desktop/ajcorp/supabase/migrations/20260405_000001_create_saintce_core.sql)
+- [`supabase/migrations/20260405_000002_reset_saintce_core_production.sql`](C:/Users/Administrator/OneDrive/Desktop/ajcorp/supabase/migrations/20260405_000002_reset_saintce_core_production.sql)
 
 Notes:
 
