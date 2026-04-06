@@ -21,6 +21,21 @@
     status: string
     due_date: string
   }>
+  overdueInvoicesList: Array<{
+    id: string
+    invoice_number: string
+    amount: number
+    due_date: string
+    client_name: string
+    project_name: string
+  }>
+  suspendedSubscriptionsList: Array<{
+    id: string
+    client_name: string
+    project_name: string
+    service_name: string
+    suspended_at: string | null
+  }>
   recentStripeEvents: Array<{
     id: string
     event_id: string
@@ -42,13 +57,15 @@
   }>
 }
 
+export type BillingReminderTier = "issued" | "reminder" | "reminder_2" | "reminder_3"
+
 export interface BillingRunResult {
   invoicesGenerated: number
   invoicesOverdue: number
   subscriptionsSuspended: number
 }
 
-export type BillingNotificationType = "issued" | "reminder"
+export type BillingNotificationType = BillingReminderTier
 
 export interface BillingReminderCandidate {
   invoiceId: string

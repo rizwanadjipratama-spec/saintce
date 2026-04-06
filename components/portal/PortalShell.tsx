@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { label: "Projects", href: "/portal/projects" },
   { label: "Invoices", href: "/portal/invoices" },
   { label: "Payments", href: "/portal/payments" },
+  { label: "Support", href: "/portal/tickets" },
 ]
 
 const PUBLIC_PORTAL_PATHS = ["/portal/login"]
@@ -118,7 +119,7 @@ export default function PortalShell({ children }: { children: React.ReactNode })
 
       {/* Mobile nav */}
       <nav className="fixed bottom-0 left-0 z-[100] w-full border-t border-[var(--border-soft)] bg-[var(--bg-1)] px-2 py-2 md:hidden">
-        <div className="grid grid-cols-4 gap-1">
+        <div className="grid grid-cols-5 gap-1">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}

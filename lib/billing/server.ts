@@ -1,16 +1,42 @@
 ﻿import "server-only"
 
+import Stripe from "stripe"
 import { getSupabaseAdmin } from "@/lib/supabase-admin"
-import { sendInvoiceReminder, sendIssuedInvoiceNotification, sendSubscriptionSuspendedEmail } from "@/lib/notifications/service"
+import { sendInvoiceReminder, sendInvoiceReminder2, sendInvoiceReminder3, sendIssuedInvoiceNotification, sendSubscriptionSuspendedEmail } from "@/lib/notifications/service"
 import { formatCurrency } from "@/lib/utils"
 import type {
   BillingReminderCandidate,
   BillingReminderDispatchResult,
+  BillingReminderTier,
   BillingRunResult,
 } from "@/lib/billing/types"
 
+let _stripe: Stripe | null = null
+function getStripe(): Stripe {
+  if (!_stripe) {
+    const key = process.env.STRIPE_SECRET_KEY
+    if (!key) throw new Error("Missing STRIPE_SECRET_KEY")
+    _stripe = new Stripe(key)
+  }
+  return _stripe
+}
+
 interface RpcCapableClient {
   rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>
+}
+
+function getDaysOverdue(dueDate: string, today: string): number {
+  const due = new Date(dueDate)
+  const now = new Date(today)
+  return Math.floor((now.getTime() - due.getTime()) / (1000 * 60 * 60 * 24))
+}
+
+function resolveReminderTier(issueDate: string, dueDate: string, today: string): BillingReminderTier {
+  if (issueDate === today) return "issued"
+  const daysOverdue = getDaysOverdue(dueDate, today)
+  if (daysOverdue >= 7) return "reminder_3"
+  if (daysOverdue >= 3) return "reminder_2"
+  return "reminder"
 }
 
 function normalizeNotificationCandidate(row: Record<string, unknown>, today: string): BillingReminderCandidate | null {
@@ -45,7 +71,7 @@ function normalizeNotificationCandidate(row: Record<string, unknown>, today: str
     dueDate,
     clientName: typeof clientData.name === "string" ? clientData.name : "Client",
     email,
-    notificationType: issueDate === today ? "issued" : "reminder",
+    notificationType: resolveReminderTier(issueDate, dueDate, today),
   }
 }
 
@@ -74,12 +100,19 @@ async function fetchNotificationCandidates(runAt = new Date().toISOString()) {
   const today = runAt.slice(0, 10)
   const inThreeDays = new Date(runAt)
   inThreeDays.setUTCDate(inThreeDays.getUTCDate() + 3)
+  // Also pick up invoices 3+ days overdue (reminder_2) and 7+ days overdue (reminder_3)
+  const threeDaysAgo = new Date(runAt)
+  threeDaysAgo.setUTCDate(threeDaysAgo.getUTCDate() - 3)
 
   const { data, error } = await admin
     .from("invoices")
     .select("id, invoice_number, amount, status, issue_date, due_date, subscription_id(service_id(project_id(client_id(name, email))))")
     .in("status", ["issued", "overdue"])
-    .or(`issue_date.eq.${today},and(due_date.gte.${today},due_date.lte.${inThreeDays.toISOString().slice(0, 10)})`)
+    .or(
+      `issue_date.eq.${today},` +
+      `and(status.eq.issued,due_date.gte.${today},due_date.lte.${inThreeDays.toISOString().slice(0, 10)}),` +
+      `and(status.eq.overdue,due_date.lte.${threeDaysAgo.toISOString().slice(0, 10)})`
+    )
     .order("due_date", { ascending: true })
 
   if (error) {
@@ -102,31 +135,31 @@ async function fetchNotificationCandidates(runAt = new Date().toISOString()) {
 }
 
 export async function sendBillingNotifications(runAt?: string): Promise<BillingReminderDispatchResult> {
-  const candidates = await fetchNotificationCandidates(runAt)
+  const effectiveRunAt = runAt ?? new Date().toISOString()
+  const candidates = await fetchNotificationCandidates(effectiveRunAt)
 
   let notificationsSent = 0
   let skipped = 0
 
   for (const candidate of candidates) {
     try {
+      const common = {
+        to: candidate.email,
+        clientName: candidate.clientName,
+        invoiceNumber: candidate.invoiceNumber,
+        amountLabel: formatCurrency(candidate.amount),
+        dueDate: candidate.dueDate,
+      }
       if (candidate.notificationType === "issued") {
-        await sendIssuedInvoiceNotification({
-          to: candidate.email,
-          clientName: candidate.clientName,
-          invoiceNumber: candidate.invoiceNumber,
-          amountLabel: formatCurrency(candidate.amount),
-          dueDate: candidate.dueDate,
-          statusLabel: candidate.status,
-        })
+        await sendIssuedInvoiceNotification({ ...common, statusLabel: candidate.status })
+      } else if (candidate.notificationType === "reminder_3") {
+        const days = getDaysOverdue(candidate.dueDate, effectiveRunAt.slice(0, 10))
+        await sendInvoiceReminder3({ ...common, daysOverdue: days })
+      } else if (candidate.notificationType === "reminder_2") {
+        const days = getDaysOverdue(candidate.dueDate, effectiveRunAt.slice(0, 10))
+        await sendInvoiceReminder2({ ...common, daysOverdue: days })
       } else {
-        await sendInvoiceReminder({
-          to: candidate.email,
-          clientName: candidate.clientName,
-          invoiceNumber: candidate.invoiceNumber,
-          amountLabel: formatCurrency(candidate.amount),
-          dueDate: candidate.dueDate,
-          statusLabel: candidate.status,
-        })
+        await sendInvoiceReminder({ ...common, statusLabel: candidate.status })
       }
       notificationsSent += 1
     } catch {
@@ -138,6 +171,52 @@ export async function sendBillingNotifications(runAt?: string): Promise<BillingR
     notificationsSent,
     skipped,
   }
+}
+
+/**
+ * Retry failed Stripe payments for overdue invoices that have a stripe_invoice_id.
+ * Calls stripe.invoices.pay() for each open Stripe invoice.
+ * Logs results to payment_retry_logs.
+ */
+export async function retryFailedPayments(): Promise<{ retried: number; succeeded: number; failed: number }> {
+  const admin = getSupabaseAdmin()
+
+  // Find overdue invoices with a stripe_invoice_id and no successful payment
+  const { data: candidates, error } = await admin
+    .from("invoices")
+    .select("id, stripe_invoice_id")
+    .eq("status", "overdue")
+    .not("stripe_invoice_id", "is", null)
+    .limit(50)
+
+  if (error || !candidates?.length) return { retried: 0, succeeded: 0, failed: 0 }
+
+  const stripe = getStripe()
+  let succeeded = 0
+  let failed = 0
+
+  for (const inv of candidates as Array<{ id: string; stripe_invoice_id: string }>) {
+    try {
+      await stripe.invoices.pay(inv.stripe_invoice_id, { forgive: true })
+      succeeded++
+      void admin.from("payment_retry_logs").insert({
+        invoice_id: inv.id,
+        stripe_invoice_id: inv.stripe_invoice_id,
+        status: "success",
+      } as never).then(() => undefined, () => undefined)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      failed++
+      void admin.from("payment_retry_logs").insert({
+        invoice_id: inv.id,
+        stripe_invoice_id: inv.stripe_invoice_id,
+        status: "failed",
+        error_message: msg.slice(0, 500),
+      } as never).then(() => undefined, () => undefined)
+    }
+  }
+
+  return { retried: candidates.length, succeeded, failed }
 }
 
 /**

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { getPortalSession } from "@/lib/portal/auth"
-import { getPortalInvoiceById, getPortalClient, type PortalInvoice, type PortalClient } from "@/lib/portal/data"
+import { getPortalInvoiceById, getPortalClient, getPortalInvoiceItems, type PortalInvoice, type PortalClient, type PortalInvoiceItem } from "@/lib/portal/data"
 import { formatCurrency } from "@/lib/utils"
 import { siteConfig } from "@/lib/site-config"
 
@@ -14,6 +14,7 @@ export default function InvoicePrintPage() {
 
   const [invoice, setInvoice] = useState<PortalInvoice | null>(null)
   const [client, setClient] = useState<PortalClient | null>(null)
+  const [items, setItems] = useState<PortalInvoiceItem[]>([])
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
@@ -22,15 +23,17 @@ export default function InvoicePrintPage() {
     const session = await getPortalSession()
     if (!session) { router.replace("/portal/login"); return }
 
-    const [inv, cli] = await Promise.all([
+    const [inv, cli, lineItems] = await Promise.all([
       getPortalInvoiceById(invoiceId),
       getPortalClient(session.email),
+      getPortalInvoiceItems(invoiceId),
     ])
 
     if (!inv) { router.replace("/portal/invoices"); return }
 
     setInvoice(inv)
     setClient(cli)
+    setItems(lineItems)
     setLoading(false)
   }, [invoiceId, router])
 
@@ -115,16 +118,24 @@ export default function InvoicePrintPage() {
           <thead>
             <tr>
               <th>Description</th>
-              <th>Project</th>
-              <th>Amount</th>
+              {items.length > 0 && <><th style={{ textAlign: "right" }}>Qty</th><th style={{ textAlign: "right" }}>Unit price</th></>}
+              <th style={{ textAlign: "right" }}>Amount</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>{invoice.service_name}</td>
-              <td style={{ color: "#666" }}>{invoice.project_name}</td>
-              <td>{formatCurrency(invoice.amount)}</td>
-            </tr>
+            {items.length > 0 ? items.map((item) => (
+              <tr key={item.id}>
+                <td>{item.description}</td>
+                <td style={{ textAlign: "right", color: "#666" }}>{item.quantity}</td>
+                <td style={{ textAlign: "right", color: "#666" }}>{formatCurrency(item.unit_price)}</td>
+                <td style={{ textAlign: "right" }}>{formatCurrency(item.total)}</td>
+              </tr>
+            )) : (
+              <tr>
+                <td>{invoice.service_name} · {invoice.project_name}</td>
+                <td style={{ textAlign: "right" }}>{formatCurrency(invoice.amount)}</td>
+              </tr>
+            )}
           </tbody>
         </table>
 

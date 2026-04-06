@@ -1,6 +1,9 @@
-﻿import { executeBillingAutomation, sendBillingNotifications, sendSuspensionNotifications } from "@/lib/billing/server"
+﻿import { executeBillingAutomation, retryFailedPayments, sendBillingNotifications, sendSuspensionNotifications } from "@/lib/billing/server"
 import { getErrorMessage } from "@/lib/errors"
 import { getSupabaseAdmin } from "@/lib/supabase-admin"
+import { sendMonthlyRevenueReport } from "@/lib/notifications/service"
+import { formatCurrency } from "@/lib/utils"
+import { siteConfig } from "@/lib/site-config"
 
 async function isAuthorized(request: Request) {
   const cronSecret = process.env.BILLING_CRON_SECRET
@@ -54,10 +57,41 @@ async function runBillingCycle(request: Request, isGet = false) {
     const admin = getSupabaseAdmin()
 
     const automation = await executeBillingAutomation(runAt)
-    const [notifications, suspensions] = await Promise.all([
+    const [notifications, suspensions, retries] = await Promise.all([
       sendBillingNotifications(runAt),
       sendSuspensionNotifications(runAt),
+      retryFailedPayments(),
     ])
+
+    // Fire monthly revenue report on the 1st of each month (fire-and-forget)
+    const runDate = new Date(runAt)
+    if (runDate.getUTCDate() === 1) {
+      const month = runDate.toLocaleDateString("en-US", { year: "numeric", month: "long" })
+      const startOfMonth = new Date(runDate.getFullYear(), runDate.getMonth(), 1).toISOString()
+      void Promise.all([
+        admin.from("payments").select("amount").eq("status", "paid").gte("paid_at", startOfMonth),
+        admin.from("invoices").select("id", { count: "exact", head: true }).eq("status", "overdue"),
+        admin.from("subscriptions").select("id", { count: "exact", head: true }).eq("status", "suspended"),
+        admin.from("subscriptions").select("price, billing_interval").eq("status", "active"),
+      ]).then(([paymentsRes, overdueRes, suspendedRes, mrrRes]) => {
+        const monthRevenue = ((paymentsRes.data ?? []) as Array<Record<string, unknown>>).reduce((s, p) => s + Number(p.amount ?? 0), 0)
+        const mrr = ((mrrRes.data ?? []) as Array<Record<string, unknown>>).reduce((s, sub) => {
+          const price = Number(sub.price ?? 0)
+          return s + (sub.billing_interval === "yearly" ? price / 12 : price)
+        }, 0)
+        void sendMonthlyRevenueReport({
+          to: siteConfig.contact.adminEmail,
+          adminName: siteConfig.brand.adminName,
+          month,
+          totalRevenue: formatCurrency(monthRevenue),
+          mrr: formatCurrency(mrr),
+          invoicesGenerated: automation.invoicesGenerated,
+          paymentReceived: (paymentsRes.data ?? []).length,
+          overdueCount: overdueRes.count ?? 0,
+          suspendedCount: suspendedRes.count ?? 0,
+        }).catch(() => undefined)
+      }).catch(() => undefined)
+    }
 
     // Log automation run to database
     void admin.from("automation_logs").insert({
@@ -78,6 +112,7 @@ async function runBillingCycle(request: Request, isGet = false) {
         notificationsSent: notifications.notificationsSent + suspensions.sent,
         skipped: notifications.skipped + suspensions.skipped,
       },
+      retries,
     })
   } catch (error) {
     // Log error

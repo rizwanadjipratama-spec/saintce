@@ -68,22 +68,22 @@ Plain text
 [x] Client service status view (Done — Claude, shown in projects page)
 [ ] Client upload files
 [ ] Client contracts view
-[ ] Client support tickets
+[x] Client support tickets (Done — Claude, /portal/tickets: create ticket + view + comment thread)
 3. BILLING SYSTEM IMPROVEMENTS
 Plain text
 [x] Invoice PDF generator (Done — Claude, print page /portal/invoices/[id]/print with window.print())
-[ ] Invoice numbering system robust
-[ ] Invoice items breakdown
-[ ] Discount system
-[ ] Tax / VAT system
-[ ] Credit / balance system
-[ ] Refund system
-[ ] Adjustment invoice
-[ ] Retry failed payment automation
-[ ] Grace period logic
-[ ] Multi reminder email system
+[x] Invoice numbering system robust (Done — Claude, migration 000012: invoice_sequences table + atomic INSERT ON CONFLICT DO UPDATE, seeds from existing invoices)
+[x] Invoice items breakdown (Done — Claude, invoice_items table + admin editor + portal detail + print page)
+[x] Discount system (Done — Claude, migration 000014: discount_percent + discount_amount columns on invoices)
+[x] Tax / VAT system (Done — Claude, migration 000014: tax_rate + tax_amount + subtotal columns on invoices)
+[x] Credit / balance system (Done — Claude, client_credits table + /admin/credits page with balance view)
+[x] Refund system (Done — Claude, refunds table + /admin/refunds page, record refunds against payments)
+[x] Adjustment invoice (Done — Claude, migration 000012: invoice_type enum, create_adjustment_invoice DB function, ADJ-YYYY-NNNN numbering, /admin/adjustments page)
+[x] Retry failed payment automation (Done — Claude, retryFailedPayments() in billing/server.ts: queries overdue invoices with stripe_invoice_id, calls stripe.invoices.pay(), logs to payment_retry_logs)
+[x] Grace period logic (Done — grace_period_days column on subscriptions, used in run_billing_automation DB function)
+[x] Multi reminder email system (Done — 3-tier: reminder, reminder_2 (3d overdue), reminder_3 (7d overdue))
 [x] Payment receipt email (Done — Claude, sendPaymentReceiptEmail with reference + paid date + portal link)
-[ ] Subscription upgrade / downgrade
+[x] Subscription upgrade / downgrade (Done — Claude, edit plan panel per subscription with price + billing_interval, updateSubscriptionPlan in service)
 4. BILLING AUTOMATION ENGINE
 Plain text
 [x] Daily billing cron (Done — Claude, vercel.json + GET handler in /api/billing/run)
@@ -92,28 +92,28 @@ Plain text
 [x] Send invoice reminders (Done — lib/billing/server.ts sendBillingNotifications)
 [x] Suspend overdue subscriptions (Done — database function run_billing_automation)
 [x] Reactivate after payment (Done — Stripe webhook + record_payment_and_sync)
-[ ] Retry failed payments
-[ ] Send monthly revenue report
+[x] Retry failed payments (Done — Claude, runs automatically in billing cron alongside notifications + suspensions)
+[x] Send monthly revenue report (Done — Claude, sendMonthlyRevenueReport fires on 1st of month in billing run)
 [x] Automation run logs (Done — Claude, automation_logs table + logged in /api/billing/run)
 [x] Automation error logs (Done — Claude, error_message column in automation_logs)
 5. ACCESS CONTROL ENGINE
 Plain text
 [x] Project access guard (Done — can_access_project DB function)
 [x] Service access guard (Done — sync_project_and_service_access DB function)
-[ ] Subscription status check middleware
+[x] Subscription status check middleware (Done — Claude, proxy.ts guards portal routes + rate limits API)
 [x] Suspended project blocking (Done — access_blocked flag on projects)
 [x] Reactivation after payment (Done — Stripe webhook sync)
 6. ADMIN PLATFORM IMPROVEMENTS
 Plain text
 [x] Billing overview dashboard (Done — /admin/billing-overview)
-[ ] Revenue chart
+[x] Revenue chart (Done — Claude, CSS bar chart on /admin/revenue showing % of total per client)
 [x] MRR calculation (Done — Claude, in billing overview: monthly + yearly/12)
-[ ] Overdue invoices list
-[ ] Suspended subscriptions list
-[ ] Recent payments list
-[ ] Activity timeline
-[ ] Client activity history
-[ ] Manual adjustments
+[x] Overdue invoices list (Done — Claude, panel in billing-overview with client/project name)
+[x] Suspended subscriptions list (Done — Claude, panel in billing-overview with client/service/project)
+[x] Recent payments list (Done — existing panel in billing-overview)
+[x] Activity timeline (Done — Claude, /admin/activity page querying audit_logs with filter + change summary)
+[x] Client activity history (Done — Claude, /admin/clients/[id]/activity page with full audit trail + Activity button on each client row)
+[x] Manual adjustments (Done — Claude, /admin/adjustments page: create adjustment invoice or credit note with custom amount per subscription)
 [x] Notes per client (Done — notes column in clients table + textarea in admin clients form)
 [x] Notes per project (Done — Claude, notes TEXT column added in migration 000010)
 7. FILE & CONTRACT MANAGEMENT
@@ -126,34 +126,34 @@ Plain text
 [ ] File access permissions
 8. SUPPORT SYSTEM
 Plain text
-[ ] Support ticket system
-[ ] Ticket status
-[ ] Ticket priority
-[ ] Ticket comments
+[x] Support ticket system (Done — Claude, tickets + ticket_comments tables, /admin/tickets, /portal/tickets)
+[x] Ticket status (Done — open | in_progress | waiting | resolved | closed, admin can change)
+[x] Ticket priority (Done — low | normal | high | urgent, admin can change)
+[x] Ticket comments (Done — threaded comments with admin/client author_type distinction)
 [ ] Ticket email notification
 9. NOTIFICATION SYSTEM
 Plain text
-[ ] Notification table
-[ ] Email notification templates
+[x] Notification table (Done — Claude, notification_logs table in migration 000011)
+[x] Email notification templates (Done — Claude, /admin/email-templates page: all 9 templates with trigger, subject, variables, implementation pointer)
 [x] Invoice email (Done — lib/billing/server.ts sendIssuedInvoiceNotification)
 [x] Payment success email (Done — Claude, sendPaymentSuccessEmail via Stripe webhook)
 [x] Payment failed email (Done — Claude, sendPaymentFailedEmail via Stripe webhook)
 [x] Subscription suspended email (Done — Claude, sendSubscriptionSuspendedEmail via billing automation)
 [x] Subscription reactivated email (Done — Claude, sendSubscriptionReactivatedEmail via Stripe webhook)
 [x] Reminder email 1 (Done — lib/billing/server.ts sendBillingNotifications)
-[ ] Reminder email 2
-[ ] Reminder email 3
+[x] Reminder email 2 (Done — Claude, sendInvoiceReminder2 for invoices 3+ days overdue)
+[x] Reminder email 3 (Done — Claude, sendInvoiceReminder3 final notice for invoices 7+ days overdue)
 10. LOGGING & MONITORING
 Plain text
-[ ] System logs
-[ ] Billing logs
-[ ] Webhook logs
-[ ] Email logs
-[ ] Automation logs
-[ ] Error logs
+[x] System logs (Done — Claude, /admin/system-logs page: tabbed view — billing cron runs, Stripe webhooks, payment retry logs)
+[x] Billing logs (Done — automation_logs table captures all billing cycle results)
+[x] Webhook logs (Done — stripe_webhook_events table captures all webhook events)
+[x] Email logs (Done — Claude, /admin/email-logs page querying notification_logs with status filter)
+[x] Automation logs (Done — Claude, automation_logs table + UI in billing-overview)
+[x] Error logs (Done — error_message column in automation_logs)
 [x] Stripe event logs (Done — stripe_webhook_events table + shown in billing overview)
-[ ] Admin activity logs
-[ ] Client activity logs
+[x] Admin activity logs (Done — Claude, audit_logs table + /admin/activity page with table filter)
+[x] Client activity logs (Done — Claude, /admin/clients/[id]/activity page, audit_logs filtered by client_id + child records)
 11. SECURITY
 Plain text
 [x] Supabase RLS policies (Done — admin + client portal RLS)
@@ -161,7 +161,7 @@ Plain text
 [x] Client role system (Done — client portal RLS via email match)
 [ ] Permission per project
 [x] Webhook signature verification (Done — Stripe webhook signature verify)
-[ ] Rate limiting API
+[x] Rate limiting API (Done — Claude, in-memory rate limiter in proxy.ts: contact 5/min, checkout 10/min, export 20/min)
 [x] Input validation (Done — contact form + billing API routes)
 [x] HTML sanitization (Done — contact form API route)
 [ ] File upload validation
@@ -174,12 +174,12 @@ Plain text
 [x] Invoice export (Done — Claude, /api/admin/export?type=invoices CSV download)
 [x] Client export (Done — Claude, /api/admin/export?type=clients CSV download)
 [ ] Restore procedure documentation
-[ ] Migration history
+[x] Migration history (Done — Claude, /admin/migrations page: all 14 migrations with tables/functions/notes, collapsible)
 13. INFRASTRUCTURE / DEPLOYMENT
 Plain text
 [ ] Production environment
 [ ] Staging environment
-[ ] Cron scheduler deployed
+[x] Cron scheduler deployed (Done — Claude, vercel.json cron 0 1 * * * → /api/billing/run)
 [ ] Stripe live mode
 [ ] Webhook live endpoint
 [ ] Email domain verified
@@ -188,12 +188,12 @@ Plain text
 [ ] Analytics
 14. ANALYTICS & BUSINESS
 Plain text
-[ ] Revenue dashboard
-[ ] Revenue per client
-[ ] Revenue per project
-[ ] Monthly recurring revenue
-[ ] Outstanding invoices
-[ ] Client lifetime value
+[x] Revenue dashboard (Done — Claude, /admin/revenue page with total + per client + per project)
+[x] Revenue per client (Done — Claude, /admin/revenue grouped by client with payment count)
+[x] Revenue per project (Done — Claude, /admin/revenue grouped by project)
+[x] Monthly recurring revenue (Done — MRR stat card in billing-overview: monthly + yearly/12)
+[x] Outstanding invoices (Done — overdue invoices list panel + count in stat cards)
+[x] Client lifetime value (Done — Claude, avg CLV stat card on /admin/revenue + highest value client)
 SAINTCE SYSTEM WORKFLOW (FINAL)
 WORKFLOW CLIENT → BILLING → ACCESS
 Plain text

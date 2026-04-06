@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import {
   fetchClients,
   removeClient,
@@ -252,9 +253,10 @@ export default function AdminClientsPage() {
                   )}
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                   <button onClick={() => handleEdit(client)} className="saintce-button saintce-button--ghost">Edit</button>
                   <button onClick={() => handleDelete(client.id)} className="saintce-button saintce-button--ghost">Delete</button>
+                  <Link href={`/admin/clients/${client.id}/activity`} className="saintce-button saintce-button--ghost">Activity</Link>
                 </div>
               </div>
             ))}

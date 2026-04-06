@@ -204,6 +204,52 @@ export default function BillingOverviewPage() {
         </section>
       </div>
 
+      {/* Overdue Invoices + Suspended Subscriptions */}
+      <div className="mt-8 grid gap-5 xl:grid-cols-2">
+        <section className="saintce-inset rounded-[28px] p-6">
+          <h2 className="font-display text-2xl">Overdue invoices</h2>
+          <p className="mt-1 text-sm text-(--muted)">Invoices past their due date awaiting payment.</p>
+          <div className="mt-5 space-y-3">
+            {overview.overdueInvoicesList.length > 0 ? overview.overdueInvoicesList.map((inv) => (
+              <div key={inv.id} className="rounded-[22px] border border-(--signal)/20 bg-(--signal)/5 px-4 py-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-(--text-primary)">{inv.invoice_number}</p>
+                    <p className="mt-1 text-sm text-(--muted)">{inv.client_name} · {inv.project_name}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-(--signal)">{formatCurrency(inv.amount)}</p>
+                    <p className="mt-1 text-xs text-(--muted)">Due {inv.due_date}</p>
+                  </div>
+                </div>
+              </div>
+            )) : <p className="text-(--muted)">No overdue invoices. All clear.</p>}
+          </div>
+        </section>
+
+        <section className="saintce-inset rounded-[28px] p-6">
+          <h2 className="font-display text-2xl">Suspended subscriptions</h2>
+          <p className="mt-1 text-sm text-(--muted)">Services blocked due to unpaid overdue invoices.</p>
+          <div className="mt-5 space-y-3">
+            {overview.suspendedSubscriptionsList.length > 0 ? overview.suspendedSubscriptionsList.map((sub) => (
+              <div key={sub.id} className="rounded-[22px] border border-orange-500/20 bg-orange-500/5 px-4 py-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-(--text-primary)">{sub.service_name}</p>
+                    <p className="mt-1 text-sm text-(--muted)">{sub.client_name} · {sub.project_name}</p>
+                  </div>
+                  {sub.suspended_at && (
+                    <p className="shrink-0 text-xs text-(--muted)">
+                      {new Date(sub.suspended_at).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )) : <p className="text-(--muted)">No suspended subscriptions.</p>}
+          </div>
+        </section>
+      </div>
+
       {/* Automation Logs */}
       <section className="mt-8 saintce-inset rounded-[28px] p-6">
         <div className="flex flex-col gap-2 border-b border-(--border-soft) pb-4 md:flex-row md:items-end md:justify-between">

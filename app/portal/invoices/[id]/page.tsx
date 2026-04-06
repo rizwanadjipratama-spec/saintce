@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react"
 import { useRouter, useParams } from "next/navigation"
 import Link from "next/link"
 import { getPortalSession } from "@/lib/portal/auth"
-import { getPortalInvoiceById, type PortalInvoice } from "@/lib/portal/data"
+import { getPortalInvoiceById, getPortalInvoiceItems, type PortalInvoice, type PortalInvoiceItem } from "@/lib/portal/data"
 import { supabase } from "@/lib/supabase"
 import { formatCurrency } from "@/lib/utils"
 
@@ -24,6 +24,7 @@ export default function PortalInvoiceDetailPage() {
   const [loading, setLoading] = useState(true)
   const [paying, setPaying] = useState(false)
   const [invoice, setInvoice] = useState<PortalInvoice | null>(null)
+  const [items, setItems] = useState<PortalInvoiceItem[]>([])
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
@@ -39,7 +40,10 @@ export default function PortalInvoiceDetailPage() {
       return
     }
 
-    const data = await getPortalInvoiceById(invoiceId)
+    const [data, lineItems] = await Promise.all([
+      getPortalInvoiceById(invoiceId),
+      getPortalInvoiceItems(invoiceId),
+    ])
 
     if (!data) {
       router.replace("/portal/invoices")
@@ -47,6 +51,7 @@ export default function PortalInvoiceDetailPage() {
     }
 
     setInvoice(data)
+    setItems(lineItems)
     setLoading(false)
   }, [invoiceId, router])
 
@@ -149,6 +154,35 @@ export default function PortalInvoiceDetailPage() {
             </div>
           ))}
         </div>
+
+        {/* Line items */}
+        {items.length > 0 && (
+          <div className="mt-6">
+            <p className="mb-3 text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Line items</p>
+            <div className="overflow-hidden rounded-[18px] border border-[var(--border-soft)]">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--border-soft)] text-xs uppercase tracking-[0.12em] text-[var(--muted)]">
+                    <th className="px-4 py-3 text-left font-normal">Description</th>
+                    <th className="px-4 py-3 text-right font-normal">Qty</th>
+                    <th className="px-4 py-3 text-right font-normal">Unit price</th>
+                    <th className="px-4 py-3 text-right font-normal">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item) => (
+                    <tr key={item.id} className="border-b border-[var(--border-soft)] last:border-0">
+                      <td className="px-4 py-3 text-[var(--text-primary)]">{item.description}</td>
+                      <td className="px-4 py-3 text-right text-[var(--muted)]">{item.quantity}</td>
+                      <td className="px-4 py-3 text-right text-[var(--muted)]">{formatCurrency(item.unit_price)}</td>
+                      <td className="px-4 py-3 text-right text-[var(--text-primary)]">{formatCurrency(item.total)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         <div className="mt-8 flex items-end justify-between border-t border-[var(--border-soft)] pt-6">
           <div>

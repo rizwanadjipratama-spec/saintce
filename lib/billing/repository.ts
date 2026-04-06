@@ -31,6 +31,40 @@ function normalizeRecentInvoices(data: Array<Record<string, unknown>>) {
   })) as BillingOverview["recentInvoices"]
 }
 
+function normalizeOverdueInvoicesList(data: Array<Record<string, unknown>>): BillingOverview["overdueInvoicesList"] {
+  return data.map((inv) => {
+    const sub = Array.isArray(inv.subscription) ? inv.subscription[0] : inv.subscription
+    const svc = sub && typeof sub === "object" ? (Array.isArray((sub as Record<string,unknown>).service) ? ((sub as Record<string,unknown>).service as Record<string,unknown>[])[0] : (sub as Record<string,unknown>).service) : undefined
+    const proj = svc && typeof svc === "object" ? (Array.isArray((svc as Record<string,unknown>).project) ? ((svc as Record<string,unknown>).project as Record<string,unknown>[])[0] : (svc as Record<string,unknown>).project) : undefined
+    const client = proj && typeof proj === "object" ? (Array.isArray((proj as Record<string,unknown>).client) ? ((proj as Record<string,unknown>).client as Record<string,unknown>[])[0] : (proj as Record<string,unknown>).client) : undefined
+
+    return {
+      id: String(inv.id ?? ""),
+      invoice_number: String(inv.invoice_number ?? ""),
+      amount: Number(inv.amount ?? 0),
+      due_date: String(inv.due_date ?? ""),
+      client_name: client && typeof client === "object" ? String((client as Record<string,unknown>).name ?? "Unknown") : "Unknown",
+      project_name: proj && typeof proj === "object" ? String((proj as Record<string,unknown>).name ?? "Unknown") : "Unknown",
+    }
+  })
+}
+
+function normalizeSuspendedSubscriptionsList(data: Array<Record<string, unknown>>): BillingOverview["suspendedSubscriptionsList"] {
+  return data.map((sub) => {
+    const svc = Array.isArray(sub.service) ? sub.service[0] : sub.service
+    const proj = svc && typeof svc === "object" ? (Array.isArray((svc as Record<string,unknown>).project) ? ((svc as Record<string,unknown>).project as Record<string,unknown>[])[0] : (svc as Record<string,unknown>).project) : undefined
+    const client = proj && typeof proj === "object" ? (Array.isArray((proj as Record<string,unknown>).client) ? ((proj as Record<string,unknown>).client as Record<string,unknown>[])[0] : (proj as Record<string,unknown>).client) : undefined
+
+    return {
+      id: String(sub.id ?? ""),
+      client_name: client && typeof client === "object" ? String((client as Record<string,unknown>).name ?? "Unknown") : "Unknown",
+      project_name: proj && typeof proj === "object" ? String((proj as Record<string,unknown>).name ?? "Unknown") : "Unknown",
+      service_name: svc && typeof svc === "object" ? String((svc as Record<string,unknown>).name ?? "Unknown") : "Unknown",
+      suspended_at: typeof sub.suspended_at === "string" ? sub.suspended_at : null,
+    }
+  })
+}
+
 function normalizeRecentStripeEvents(data: Array<Record<string, unknown>>) {
   return data.map((event) => ({
     id: String(event.id ?? ""),
@@ -59,6 +93,8 @@ export async function fetchBillingOverview(): Promise<BillingOverview> {
     recentStripeEventsResult,
     mrrResult,
     automationLogsResult,
+    overdueInvoicesListResult,
+    suspendedSubscriptionsListResult,
   ] = await Promise.all([
     supabase.from("clients").select("id", { count: "exact", head: true }).is("deleted_at", null),
     supabase.from("projects").select("id", { count: "exact", head: true }).is("deleted_at", null),
@@ -70,9 +106,31 @@ export async function fetchBillingOverview(): Promise<BillingOverview> {
     supabase.from("payments").select("amount, paid_at").gte("paid_at", startOfMonth).eq("status", "paid"),
     supabase.from("stripe_webhook_events").select("id", { count: "exact", head: true }).eq("processing_status", "failed"),
     supabase.from("stripe_webhook_events").select("id, event_id, event_type, processing_status, error_message, livemode, received_at").order("received_at", { ascending: false }).limit(6),
-    // MRR = sum of price of all active monthly subscriptions
     supabase.from("subscriptions").select("price, billing_interval").eq("status", "active"),
     supabase.from("automation_logs").select("id, run_at, invoices_generated, invoices_overdue, subscriptions_suspended, notifications_sent, duration_ms, error_message").order("run_at", { ascending: false }).limit(5),
+    // Overdue invoices with client/project names
+    supabase.from("invoices").select(`
+      id, invoice_number, amount, due_date,
+      subscription:subscriptions(
+        service:services(
+          project:projects(
+            name,
+            client:clients(name)
+          )
+        )
+      )
+    `).eq("status", "overdue").order("due_date", { ascending: true }).limit(10),
+    // Suspended subscriptions with client/project/service names
+    supabase.from("subscriptions").select(`
+      id, suspended_at,
+      service:services(
+        name,
+        project:projects(
+          name,
+          client:clients(name)
+        )
+      )
+    `).eq("status", "suspended").order("suspended_at", { ascending: false }).limit(10),
   ])
 
   const criticalErrors = [
@@ -113,6 +171,8 @@ export async function fetchBillingOverview(): Promise<BillingOverview> {
     stripeWebhookFailures: stripeWebhookFailuresResult.count ?? 0,
     recentPayments: normalizeRecentPayments((recentPaymentsResult.data ?? []) as Array<Record<string, unknown>>),
     recentInvoices: normalizeRecentInvoices((recentInvoicesResult.data ?? []) as Array<Record<string, unknown>>),
+    overdueInvoicesList: normalizeOverdueInvoicesList((overdueInvoicesListResult.data ?? []) as Array<Record<string, unknown>>),
+    suspendedSubscriptionsList: normalizeSuspendedSubscriptionsList((suspendedSubscriptionsListResult.data ?? []) as Array<Record<string, unknown>>),
     recentStripeEvents: normalizeRecentStripeEvents((recentStripeEventsResult.data ?? []) as Array<Record<string, unknown>>),
     recentAutomationLogs: (automationLogsResult.data ?? []).map((log) => {
       const r = log as Record<string, unknown>

@@ -1,5 +1,22 @@
 ﻿export type InvoiceStatus = "draft" | "issued" | "paid" | "overdue" | "void"
 
+export interface InvoiceItem {
+  id: string
+  invoice_id: string
+  description: string
+  quantity: number
+  unit_price: number
+  total: number
+  sort_order: number
+}
+
+export interface InvoiceItemInput {
+  description: string
+  quantity: number
+  unit_price: number
+  sort_order?: number
+}
+
 export interface InvoiceRecord {
   id: string
   subscription_id: string

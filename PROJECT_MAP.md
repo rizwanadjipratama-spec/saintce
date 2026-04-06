@@ -705,3 +705,121 @@ Files:
 
 Kolom `notes` sudah ada di tabel `clients` (dari migration 000005) dan sudah ter-render di admin clients form sebagai textarea "Internal notes". Tidak ada migration baru diperlukan.
 
+## 16. Session 6 Additions (2026-04-06)
+
+### Admin: Overdue Invoices + Suspended Subscriptions Panels
+
+Dua panel baru ditambahkan ke `/admin/billing-overview` di antara payments/invoices dan automation log:
+
+- **Overdue invoices panel** — list invoice status `overdue` dengan client name, project name, amount, dan due date. Berwarna merah sinyal jika ada overdue.
+- **Suspended subscriptions panel** — list subscription status `suspended` dengan client name, project name, service name, dan tanggal suspended. Berwarna oranye.
+
+Types: `overdueInvoicesList` dan `suspendedSubscriptionsList` ditambahkan ke `BillingOverview`.
+
+Files:
+- [lib/billing/types.ts](/C:/Users/Administrator/OneDrive/Desktop/saintce/lib/billing/types.ts) — tambah dua array baru ke BillingOverview + `BillingReminderTier` type
+- [lib/billing/repository.ts](/C:/Users/Administrator/OneDrive/Desktop/saintce/lib/billing/repository.ts) — dua query baru dengan nested join untuk client/project names
+- [app/admin/billing-overview/page.tsx](/C:/Users/Administrator/OneDrive/Desktop/saintce/app/admin/billing-overview/page.tsx) — dua panel baru
+
+### Multi-Step Reminder Email Escalation
+
+Sistem reminder email sekarang punya 3 tier berdasarkan urgency:
+
+| Tier | Kondisi | Template |
+|------|---------|----------|
+| Reminder 1 | Invoice issued atau due dalam 3 hari | `sendInvoiceReminder` (existing) |
+| Reminder 2 | Invoice overdue 3–6 hari | `sendInvoiceReminder2` — "⚠ Overdue Invoice" |
+| Reminder 3 | Invoice overdue 7+ hari | `sendInvoiceReminder3` — "🚨 Final Notice" |
+
+Logic: `resolveReminderTier(issueDate, dueDate, today)` menentukan tier berdasarkan `getDaysOverdue()`.
+Query `fetchNotificationCandidates` diperluas untuk juga mengambil invoices yang 3+ hari overdue.
+
+`BillingNotificationType` sekarang alias dari `BillingReminderTier = "issued" | "reminder" | "reminder_2" | "reminder_3"`.
+
+Files:
+- [lib/notifications/service.ts](/C:/Users/Administrator/OneDrive/Desktop/saintce/lib/notifications/service.ts) — tambah `sendInvoiceReminder2` + `sendInvoiceReminder3`
+- [lib/billing/server.ts](/C:/Users/Administrator/OneDrive/Desktop/saintce/lib/billing/server.ts) — `resolveReminderTier`, `getDaysOverdue`, expanded query, tier dispatch
+- [lib/billing/types.ts](/C:/Users/Administrator/OneDrive/Desktop/saintce/lib/billing/types.ts) — `BillingReminderTier` + `BillingNotificationType` alias
+
+## 17. Session 7 Additions (2026-04-06)
+
+### Admin Activity Log Page
+
+Route: `/admin/activity` — audit trail of semua INSERT/UPDATE/DELETE di billing tables.
+
+- Filter per table (clients, projects, services, subscriptions, invoices, payments, all)
+- `describeChange()` helper: menampilkan ringkasan perubahan yang mudah dibaca (field mana yang berubah saat UPDATE, nama record saat INSERT/DELETE)
+- Color-coded badges: INSERT=hijau, UPDATE=biru, DELETE=merah
+- Query 100 entri terbaru dari `audit_logs`
+- Ditambahkan ke admin sidebar nav
+
+File: [app/admin/activity/page.tsx](/C:/Users/Administrator/OneDrive/Desktop/saintce/app/admin/activity/page.tsx)
+
+### Admin Revenue Page
+
+Route: `/admin/revenue` — all-time revenue broken down by client and project.
+
+- Total revenue stat card
+- Revenue per client (sorted by highest)
+- Revenue per project (sorted by highest, shows client name)
+- Data aggregated client-side dari `payments` joined ke projects → clients
+- Ditambahkan ke admin sidebar nav
+
+File: [app/admin/revenue/page.tsx](/C:/Users/Administrator/OneDrive/Desktop/saintce/app/admin/revenue/page.tsx)
+
+### Monthly Revenue Report Email
+
+Email otomatis ke admin setiap tanggal 1 bulan berjalan:
+- Trigger: billing run cron tanggal 1 (UTC) → `sendMonthlyRevenueReport`
+- Berisi: revenue bulan ini, MRR, invoices generated, payments received, overdue count, suspended count
+- Fire-and-forget dari `/api/billing/run`
+
+Files:
+- [lib/notifications/service.ts](/C:/Users/Administrator/OneDrive/Desktop/saintce/lib/notifications/service.ts) — tambah `sendMonthlyRevenueReport`
+- [app/api/billing/run/route.ts](/C:/Users/Administrator/OneDrive/Desktop/saintce/app/api/billing/run/route.ts) — check `runDate.getUTCDate() === 1`, fetch stats, fire email
+
+### Admin Sidebar Updated
+
+[app/admin/layout.tsx](/C:/Users/Administrator/OneDrive/Desktop/saintce/app/admin/layout.tsx) — tambah "Revenue" dan "Activity" ke MENU (di antara Billing dan Sections).
+
+## 18. Session 8 Additions (2026-04-06)
+
+### Invoice Items Breakdown
+
+Invoices sekarang bisa punya multiple line items (description, qty, unit price, auto-calculated total):
+
+**Migration:** `invoice_items` table — `id, invoice_id, description, quantity, unit_price, total (generated), sort_order`. Total di-calculate otomatis oleh database (`quantity * unit_price stored`).
+
+**Admin UI (`/admin/invoices`):**
+- Create form: dynamic line items editor (add/remove rows, derived total otomatis)
+- Invoice list: tombol "Items" untuk expand/edit line items per invoice
+- Amount di-override dari items jika ada
+
+**Portal:**
+- `/portal/invoices/[id]` — menampilkan line items table jika ada
+- `/portal/invoices/[id]/print` — print page menampilkan line items dengan Qty dan Unit price, atau fallback ke service name + amount jika tidak ada items
+
+**RLS:** Admin full access; portal clients read-only via invoice ownership chain.
+
+### Proxy — Rate Limiting + Portal Auth Guard
+
+[proxy.ts](/C:/Users/Administrator/OneDrive/Desktop/saintce/proxy.ts) diperluas (menggantikan middleware.ts yang conflict dengan Next.js):
+
+- **Rate limiter** (in-memory per edge instance):
+  - `/api/contact` — max 5 req/min
+  - `/api/portal/checkout` — max 10 req/min  
+  - `/api/admin/export` — max 20 req/min
+  - Response 429 dengan `Retry-After: 60` header
+
+- **Portal first-pass auth guard** — redirect `/portal/*` ke `/portal/login` jika tidak ada Supabase session cookie (`sb-access-token` atau `sb-*-auth-token`)
+
+### Notification Logs Table
+
+`notification_logs` table ditambahkan di migration 000011: `to_email, subject, notification_type, invoice_id, client_id, status, error_message, sent_at`. RLS admin-only. UI belum ada (data tersimpan, siap untuk viewer).
+
+### Client Lifetime Value
+
+[app/admin/revenue/page.tsx](/C:/Users/Administrator/OneDrive/Desktop/saintce/app/admin/revenue/page.tsx) — 2 stat card baru:
+- **Avg. CLV** — total revenue / jumlah klien yang pernah bayar
+- **Highest value client** — klien dengan total pembayaran tertinggi
+

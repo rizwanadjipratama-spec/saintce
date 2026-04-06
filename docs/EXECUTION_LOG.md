@@ -133,3 +133,174 @@ Notes:
   - getPortalPayments pakai RLS — client hanya lihat payments milik mereka via invoice → subscription → service → project → client chain
   - Mobile nav hanya 4 slot: Dashboard, Projects, Invoices, Payments (Subscriptions accessible dari Projects page)
 ---------------------------------------
+
+---------------------------------------
+Date: 2026-04-06
+AI: Claude
+Task: Session 6 — Admin overdue/suspended panels, multi-step reminder escalation
+Status: Done
+Files Changed:
+- lib/billing/types.ts (tambah overdueInvoicesList + suspendedSubscriptionsList ke BillingOverview, BillingReminderTier type)
+- lib/billing/repository.ts (tambah 2 query baru: overdue invoices list + suspended subscriptions list with joins)
+- lib/billing/server.ts (resolveReminderTier, getDaysOverdue, expanded fetchNotificationCandidates query, tier dispatch in sendBillingNotifications)
+- lib/notifications/service.ts (tambah sendInvoiceReminder2 + sendInvoiceReminder3)
+- app/admin/billing-overview/page.tsx (2 panel baru: overdue invoices + suspended subscriptions)
+- task.md (update: overdue list, suspended list, reminder 2+3, billing/webhook/automation logs, cron deployed, MRR, outstanding invoices)
+- PROJECT_MAP.md (tambah section 16)
+- docs/EXECUTION_LOG.md (file ini)
+Database Migration: none
+Env Changes: none
+Test Performed: npm run build — clean build, 34 routes, 0 TypeScript errors
+Notes:
+  - Reminder tier logic: issued=today→issued, overdue≥7d→reminder_3 (final notice), overdue≥3d→reminder_2, otherwise→reminder
+  - fetchNotificationCandidates sekarang OR antara: issued today, due dalam 3 hari, ATAU overdue 3+ hari
+  - Overdue/suspended panels pakai nested joins: invoices→subscriptions→services→projects→clients
+  - BillingNotificationType sekarang alias dari BillingReminderTier agar backward compat
+---------------------------------------
+
+---------------------------------------
+Date: 2026-04-06
+AI: Claude
+Task: Session 7 — Activity log, Revenue page, Monthly report email
+Status: Done
+Files Changed:
+- app/admin/activity/page.tsx (BARU — audit_logs viewer dengan filter + describeChange helper)
+- app/admin/revenue/page.tsx (BARU — all-time revenue by client + by project)
+- app/admin/layout.tsx (tambah Revenue + Activity ke MENU)
+- lib/notifications/service.ts (tambah sendMonthlyRevenueReport)
+- app/api/billing/run/route.ts (fire monthly report on 1st of month, fire-and-forget)
+- task.md (update: multi reminder, grace period, activity timeline, send monthly report, revenue dashboard/per client/per project, admin activity logs)
+- PROJECT_MAP.md (tambah section 17)
+- docs/EXECUTION_LOG.md (file ini)
+Database Migration: none
+Env Changes: none
+Test Performed: npm run build — 36 routes, 0 TypeScript errors
+Notes:
+  - Activity log query limit 100 entries, filter by table_name, describeChange reads old/new_data JSON
+  - Revenue aggregated client-side dengan Map untuk O(n) grouping
+  - Monthly report fires only when runDate.getUTCDate() === 1 (UTC), cron runs 01:00 UTC so this triggers correctly
+  - Grace period sudah ada sejak migration 000005, tidak perlu kode baru
+---------------------------------------
+
+---------------------------------------
+Date: 2026-04-06
+AI: Claude
+Task: Session 8 — Invoice items, middleware, rate limiting, CLV
+Status: Done
+Files Changed:
+- supabase/migrations/20260406_000011_add_invoice_items.sql (BARU — invoice_items + notification_logs tables + RLS)
+- lib/invoices/types.ts (InvoiceItem + InvoiceItemInput interfaces)
+- lib/invoices/service.ts (getInvoiceItems + saveInvoiceItems functions)
+- lib/portal/data.ts (PortalInvoiceItem type + getPortalInvoiceItems function)
+- app/admin/invoices/page.tsx (rewrite — line items editor in create form + per-invoice expand/edit)
+- app/portal/invoices/[id]/page.tsx (load items in parallel, show line items table)
+- app/portal/invoices/[id]/print/page.tsx (load items, show line items in table or fallback)
+- proxy.ts (tambah rate limiter + portal auth cookie guard, merge dari middleware.ts yang conflict)
+- app/admin/revenue/page.tsx (tambah avg CLV + highest value client stat cards)
+- task.md (update: invoice items, middleware, rate limiting, notification table, CLV)
+- PROJECT_MAP.md (tambah section 18)
+- docs/EXECUTION_LOG.md (file ini)
+Database Migration: 20260406_000011_add_invoice_items.sql
+Env Changes: none
+Test Performed: npm run build — 36 routes, 0 TypeScript errors
+Notes:
+  - Invoice amount di create form: jika ada line items dengan total > 0, gunakan derived amount; jika tidak, pakai manual input
+  - saveInvoiceItems: DELETE + INSERT per invoice (replace-all pattern, sederhana dan idempotent)
+  - proxy.ts: tidak bisa punya middleware.ts sekaligus — Next.js conflict. Semua logic digabung di proxy.ts
+  - Portal cookie check: cek sb-access-token atau sb-*-auth-token (Supabase v2 naming)
+  - notification_logs table ada tapi belum ada UI; RLS admin-only sudah terpasang
+---------------------------------------
+
+---------------------------------------
+Date: 2026-04-06
+AI: Claude
+Task: Session 9 — Subscription upgrade/downgrade, Revenue chart, Email logs, Client activity history
+Status: Done
+Files Changed:
+- lib/subscriptions/service.ts (tambah updateSubscriptionPlan dengan BillingInterval type)
+- app/admin/subscriptions/page.tsx (tambah expandedSub state + editPlan state + "Edit plan" expand panel per subscription)
+- app/admin/revenue/page.tsx (tambah CSS bar chart section: % of total per client dengan animated progress bar)
+- app/admin/email-logs/page.tsx (BARU — notification_logs viewer dengan status filter: all/sent/failed/pending)
+- app/admin/layout.tsx (tambah "Email Logs" ke MENU antara Activity dan Sections)
+- app/admin/clients/page.tsx (tambah Link import + "Activity" button per client row → /admin/clients/[id]/activity)
+- app/admin/clients/[id]/activity/page.tsx (BARU — per-client audit trail, filter by record_id OR client_id in new/old_data JSON)
+- task.md (update: subscription upgrade/downgrade, revenue chart, email logs, client activity history/logs)
+- docs/EXECUTION_LOG.md (file ini)
+Database Migration: none
+Env Changes: none
+Test Performed: npm run build — clean build, 0 TypeScript errors
+Notes:
+  - updateSubscriptionPlan: type cast BillingInterval (imported from services/types) — string tidak kompatibel langsung
+  - Revenue chart: pct = Math.round((row.total / totalRevenue) * 100), bar via inline style width + bg-(--signal)
+  - Email logs: query notification_logs ORDER BY sent_at DESC LIMIT 200, filter by status via .eq()
+  - Client activity: OR filter `record_id.eq.${clientId},new_data->>client_id.eq.${clientId},old_data->>client_id.eq.${clientId}` — covers client row + child records
+  - describeChange: INSERT shows name/number, UPDATE diffs old vs new keys, DELETE shows old name
+---------------------------------------
+
+---------------------------------------
+Date: 2026-04-06
+AI: Claude
+Task: Session 10 — Invoice numbering, retry failed payments, adjustment invoices, email templates, system logs
+Status: Done
+Files Changed:
+- supabase/migrations/20260406_000012_invoice_numbering_and_adjustments.sql (BARU — invoice_sequences, adjustment_sequences, invoice_type enum, create_adjustment_invoice, payment_retry_logs)
+- lib/billing/server.ts (tambah retryFailedPayments: query overdue invoices + stripe.invoices.pay() + log ke payment_retry_logs)
+- app/api/billing/run/route.ts (wire retryFailedPayments ke billing cron, tambah retries ke response)
+- app/admin/adjustments/page.tsx (BARU — create adjustment/credit note per subscription, ADJ-YYYY-NNNN numbering)
+- app/admin/email-templates/page.tsx (BARU — read-only viewer: 9 templates + trigger + subject + variables + impl pointer)
+- app/admin/system-logs/page.tsx (BARU — tabbed: billing cron runs + Stripe webhooks + payment retry logs)
+- app/admin/layout.tsx (tambah System Logs, Email Templates, Adjustments ke MENU; fix Tailwind v4 canonical classes)
+- task.md (update: invoice numbering, retry payments, adjustments, email templates, system logs)
+- docs/EXECUTION_LOG.md (file ini)
+Database Migration: 20260406_000012_invoice_numbering_and_adjustments.sql
+  - invoice_sequences table (year PK + last_sequence) — atomic counter via INSERT ON CONFLICT DO UPDATE
+  - adjustment_sequences table — separate counter untuk ADJ- prefix
+  - invoice_type enum: standard | adjustment | credit_note
+  - invoices.invoice_type column (default 'standard')
+  - create_adjustment_invoice() DB function
+  - get_next_adjustment_number() DB function
+  - payment_retry_logs table + RLS
+  - Seeds invoice_sequences from existing invoices (COUNT per year)
+Env Changes: none
+Test Performed: npm run build — 41 routes, 0 TypeScript errors
+Notes:
+  - get_next_invoice_number sekarang atomic: INSERT ON CONFLICT DO UPDATE RETURNING — tidak ada race condition
+  - retryFailedPayments: stripe.invoices.pay(id, { forgive: true }) — forgive: true prevents error if already paid
+  - Retry runs in parallel dengan notifications dan suspensions (Promise.all)
+  - Adjustment amount bisa negatif (credit) atau positif (debit correction)
+  - Email templates page: static code-based, tidak dari DB — templates live di lib/notifications/service.ts
+  - System logs: tab automation_logs + stripe_webhook_events + payment_retry_logs
+  - Admin layout: semua Tailwind v4 canonical class fixes (var(--x) → (--x))
+---------------------------------------
+
+---------------------------------------
+Date: 2026-04-06
+AI: Claude
+Task: Session 11 — Support tickets, Discount/Tax, Refunds, Credits, Migration history
+Status: Done
+Files Changed:
+- supabase/migrations/20260406_000013_support_tickets.sql (BARU — tickets, ticket_comments, RLS admin+portal, audit trigger)
+- supabase/migrations/20260406_000014_discount_tax_refund_credit.sql (BARU — discount/tax columns on invoices, client_credits, refunds, get_client_credit_balance)
+- lib/tickets/types.ts (BARU — Ticket, TicketComment, TicketInput, TicketStatus, TicketPriority)
+- lib/tickets/service.ts (BARU — getTickets, getTicketById, createTicket, updateTicketStatus, updateTicketPriority, getTicketComments, addTicketComment)
+- app/admin/tickets/page.tsx (BARU — list + detail + status/priority controls + threaded reply)
+- app/portal/tickets/page.tsx (BARU — client create ticket + view + reply thread)
+- app/admin/refunds/page.tsx (BARU — record refund against payment, history list)
+- app/admin/credits/page.tsx (BARU — add client credit, balance summary, recent entries)
+- app/admin/migrations/page.tsx (BARU — collapsible migration history: 14 migrations with tables/functions/notes)
+- app/admin/layout.tsx (tambah Tickets, Refunds, Credits, Migrations ke MENU)
+- components/portal/PortalShell.tsx (tambah Support nav, mobile grid-cols-4 → grid-cols-5)
+- task.md (update: support tickets, discount, tax, credit, refund, migration history)
+- docs/EXECUTION_LOG.md (file ini)
+Database Migration:
+  - 000013: tickets (status enum, priority enum), ticket_comments, triggers (updated_at, touch parent on comment), RLS admin+portal, audit
+  - 000014: invoices.discount_percent, discount_amount, tax_rate, tax_amount, subtotal, notes; client_credits table; refunds table (refund_status enum); get_client_credit_balance()
+Env Changes: none
+Test Performed: npm run build — 45 routes, 0 TypeScript errors
+Notes:
+  - Ticket RLS: admin sees all; portal client sees only their own tickets via email match to clients.email
+  - comment author_type = 'admin' styled with signal color, 'client' = neutral — visual distinction in thread
+  - Mobile nav now 5 cols (Dashboard, Projects, Invoices, Payments, Support)
+  - credits/refunds: Supabase join returns array type, need `as unknown as X[]` cast
+  - Migration history page: static (data in code), newest first, click to expand
+---------------------------------------

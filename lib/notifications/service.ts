@@ -129,6 +129,90 @@ export async function sendPaymentFailedEmail(args: {
   })
 }
 
+export async function sendMonthlyRevenueReport(args: {
+  to: string
+  adminName: string
+  month: string
+  totalRevenue: string
+  mrr: string
+  invoicesGenerated: number
+  paymentReceived: number
+  overdueCount: number
+  suspendedCount: number
+}) {
+  validateNotificationPayload(args.to)
+
+  return sendNotification({
+    to: args.to,
+    subject: `Monthly Revenue Report — ${args.month}`,
+    html: `
+      <div style="${BASE_STYLE}">
+        <h2 style="margin:0 0 16px;">Monthly Revenue Report</h2>
+        <p>Hello ${args.adminName},</p>
+        <p>Here is your Saintce revenue summary for <strong>${args.month}</strong>.</p>
+        <table style="border-collapse:collapse; width:100%; margin:16px 0;">
+          <tr><td style="padding:6px 12px 6px 0; ${MUTED}">Revenue collected</td><td style="padding:6px 0;"><strong>${args.totalRevenue}</strong></td></tr>
+          <tr><td style="padding:6px 12px 6px 0; ${MUTED}">MRR (current)</td><td style="padding:6px 0;"><strong>${args.mrr}</strong></td></tr>
+          <tr><td style="padding:6px 12px 6px 0; ${MUTED}">Invoices generated</td><td style="padding:6px 0;">${args.invoicesGenerated}</td></tr>
+          <tr><td style="padding:6px 12px 6px 0; ${MUTED}">Payments received</td><td style="padding:6px 0;">${args.paymentReceived}</td></tr>
+          <tr><td style="padding:6px 12px 6px 0; ${MUTED}">Overdue invoices</td><td style="padding:6px 0; color:#dc2626;">${args.overdueCount}</td></tr>
+          <tr><td style="padding:6px 12px 6px 0; ${MUTED}">Suspended subscriptions</td><td style="padding:6px 0; color:#ea580c;">${args.suspendedCount}</td></tr>
+        </table>
+        <p>Log in to your admin panel to view the full breakdown.</p>
+        <p style="${MUTED}">Saintce Control</p>
+      </div>
+    `,
+  })
+}
+
+export async function sendInvoiceReminder2(args: {
+  to: string
+  clientName: string
+  invoiceNumber: string
+  amountLabel: string
+  dueDate: string
+  daysOverdue: number
+}) {
+  validateNotificationPayload(args.to)
+
+  return sendNotification({
+    to: args.to,
+    subject: `⚠ Overdue Invoice — ${args.invoiceNumber}`,
+    html: buildInvoiceEmailHtml({
+      clientName: args.clientName,
+      invoiceNumber: args.invoiceNumber,
+      amountLabel: args.amountLabel,
+      dueDate: args.dueDate,
+      statusLabel: `Overdue (${args.daysOverdue} days)`,
+      intro: `Your invoice is now ${args.daysOverdue} days overdue. Please settle the outstanding amount as soon as possible to avoid service interruption.`,
+    }),
+  })
+}
+
+export async function sendInvoiceReminder3(args: {
+  to: string
+  clientName: string
+  invoiceNumber: string
+  amountLabel: string
+  dueDate: string
+  daysOverdue: number
+}) {
+  validateNotificationPayload(args.to)
+
+  return sendNotification({
+    to: args.to,
+    subject: `🚨 Final Notice — ${args.invoiceNumber}`,
+    html: buildInvoiceEmailHtml({
+      clientName: args.clientName,
+      invoiceNumber: args.invoiceNumber,
+      amountLabel: args.amountLabel,
+      dueDate: args.dueDate,
+      statusLabel: `Overdue (${args.daysOverdue} days) — Final Notice`,
+      intro: `This is a final notice. Your invoice is ${args.daysOverdue} days overdue. Failure to pay will result in immediate service suspension. Please log in to your portal and pay now.`,
+    }),
+  })
+}
+
 export async function sendPaymentReceiptEmail(args: {
   to: string
   clientName: string

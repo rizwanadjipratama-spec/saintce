@@ -55,6 +55,15 @@ export interface PortalInvoice {
   service_name: string
 }
 
+export interface PortalInvoiceItem {
+  id: string
+  description: string
+  quantity: number
+  unit_price: number
+  total: number
+  sort_order: number
+}
+
 export interface PortalPayment {
   id: string
   amount: number
@@ -240,6 +249,25 @@ export async function getPortalInvoiceById(invoiceId: string): Promise<PortalInv
 
   const normalized = normalizeInvoices([data as Record<string, unknown>])
   return normalized[0] ?? null
+}
+
+export async function getPortalInvoiceItems(invoiceId: string): Promise<PortalInvoiceItem[]> {
+  const { data, error } = await supabase
+    .from("invoice_items")
+    .select("id, description, quantity, unit_price, total, sort_order")
+    .eq("invoice_id", invoiceId)
+    .order("sort_order", { ascending: true })
+
+  if (error || !data) return []
+
+  return (data as Array<Record<string, unknown>>).map((item) => ({
+    id: String(item.id ?? ""),
+    description: String(item.description ?? ""),
+    quantity: Number(item.quantity ?? 1),
+    unit_price: Number(item.unit_price ?? 0),
+    total: Number(item.total ?? 0),
+    sort_order: Number(item.sort_order ?? 0),
+  }))
 }
 
 export async function getPortalPayments(): Promise<PortalPayment[]> {
