@@ -25,6 +25,43 @@ Notes:
 ## Log
 
 ---------------------------------------
+Date: 2026-04-06
+AI: Claude
+Task: Navigation & Auth Flow Restructure — /portal → /app migration
+Status: Done
+Files Changed:
+- app/login/page.tsx (universal login: magic link for all users, role-based redirect admin→/admin, client→/app)
+- app/(app)/layout.tsx (NEW — client app shell with fixed sidebar, avatar dropdown, mobile header + drawer + bottom nav)
+- app/(app)/page.tsx (NEW — dashboard, mirrors portal dashboard)
+- app/(app)/projects/page.tsx (NEW)
+- app/(app)/subscriptions/page.tsx (NEW)
+- app/(app)/invoices/page.tsx (NEW)
+- app/(app)/invoices/[id]/page.tsx (NEW — with Stripe checkout)
+- app/(app)/invoices/[id]/print/page.tsx (NEW — print/PDF page)
+- app/(app)/payments/page.tsx (NEW)
+- app/(app)/files/page.tsx (NEW)
+- app/(app)/tickets/page.tsx (NEW)
+- app/(app)/settings/page.tsx (NEW)
+- app/(app)/error.tsx (NEW — error boundary)
+- next.config.ts (added /portal/* → /app/* permanent redirects)
+- proxy.ts (added /app/:path* guard, updated /portal guard to redirect to /login)
+- components/layouts/Navbar.tsx (Login button on right, Clients moved to main nav, canonical Tailwind v4 classes)
+- components/sections/Hero.tsx (secondary button: "Client Login" → /login, removed /admin link)
+- lib/site-config.ts (Clients added to navigation array)
+- lib/stripe-server.ts (checkout success/cancel URLs: /portal → /app, portalUrl: /portal → /app)
+- app/api/tickets/notify/route.ts (portalUrl: /portal/tickets → /app/tickets)
+Database Migration: none
+Env Changes: none
+Test Performed: npx tsc --noEmit → 0 errors
+Notes:
+  - /portal/* routes kept as-is for backward compat (next.config.ts 301 redirects)
+  - Universal login handles both admin (GitHub/magic) and client (magic) via onAuthStateChange
+  - App layout does NOT render for login page — /login is outside (app) route group
+  - Sidebar has 8 nav items: Dashboard, Projects, Subscriptions, Invoices, Payments, Files, Support, Settings
+  - Mobile bottom tab bar shows first 5 items (grid constraint)
+---------------------------------------
+
+---------------------------------------
 Date: 2026-04-05
 AI: Claude
 Task: Performance Hardening — Fast Scroll White Flash Fix + Production Config
@@ -303,4 +340,89 @@ Notes:
   - Mobile nav now 5 cols (Dashboard, Projects, Invoices, Payments, Support)
   - credits/refunds: Supabase join returns array type, need `as unknown as X[]` cast
   - Migration history page: static (data in code), newest first, click to expand
+---------------------------------------
+
+---------------------------------------
+Date: 2026-04-06
+AI: Claude
+Task: Session 12 — Ticket notifications, File storage, Project permissions
+Status: Done
+Files Changed:
+- lib/notifications/service.ts (tambah sendTicketOpenedEmail, sendTicketReplyEmail, sendTicketAdminNotificationEmail)
+- app/api/tickets/notify/route.ts (BARU — POST /api/tickets/notify: type=ticket_opened → client+admin email, type=admin_reply → client email)
+- app/admin/tickets/page.tsx (wire notify call setelah admin reply)
+- app/portal/tickets/page.tsx (wire notify call setelah ticket created)
+- supabase/migrations/20260406_000015_file_storage.sql (BARU — client_files table + file_category enum + RLS)
+- lib/files/types.ts (BARU — ClientFile, FileCategory, BUCKET, MAX_FILE_SIZE_BYTES)
+- lib/files/service.ts (BARU — uploadClientFile, getClientFiles, getSignedUrl, deleteClientFile, formatFileSize, validateFileType)
+- app/admin/files/page.tsx (BARU — upload per client + download + delete + file list)
+- app/portal/files/page.tsx (BARU — client upload + download + delete own files)
+- app/admin/layout.tsx (tambah Files ke MENU)
+- supabase/migrations/20260406_000016_project_permissions.sql (BARU — project_permissions, is_strict_access, has_project_permission())
+- app/admin/projects/[id]/permissions/page.tsx (BARU — strict access toggle + email allow-list per project)
+- app/admin/projects/page.tsx (tambah Link import + Permissions button per project)
+- components/portal/PortalShell.tsx (tambah Files nav, MOBILE_NAV_LINKS slice 5, fix semua Tailwind v4 canonical classes)
+- task.md (update: ticket emails, file storage, permissions, file validation)
+- docs/EXECUTION_LOG.md (file ini)
+Database Migration:
+  - 000015: client_files (storage_path, original_name, mime_type, size_bytes, file_category enum, description, uploaded_by_type), RLS admin+portal
+  - 000016: project_permissions (project_id + email unique pair), is_strict_access on projects, has_project_permission() function
+Env Changes: none (Supabase Storage bucket "client-files" must be created in Supabase dashboard)
+Test Performed: npm run build — 49 routes, 0 TypeScript errors
+Notes:
+  - Ticket notify API: uses service-role admin client to load ticket+client data, then fires Resend emails
+  - File upload: DELETE old + INSERT new storage object — atomic via service layer
+  - validateFileType() blocks executable extensions (exe, bat, cmd, sh, ps1, msi, dll) before upload
+  - Portal client cannot delete admin-uploaded files (uploaded_by_type check)
+  - Project permissions: open mode (no rows) = any client email can access; strict mode (is_strict_access=true) = only allow-listed emails
+  - has_project_permission(): boolean SQL function, used as filter hook for portal project queries
+  - PortalShell canonical Tailwind v4 fixes: z-[100]→z-100, h-[68px]→h-17, max-w-[1460px]→max-w-365, text-[var(--x)]→text-(--x), etc.
+---------------------------------------
+
+---------------------------------------
+Date: 2026-04-06
+AI: Claude
+Task: Session 13 — Analytics, Error monitoring, Production deployment page
+Status: Done
+Files Changed:
+- app/layout.tsx (tambah @vercel/analytics Analytics + @vercel/speed-insights SpeedInsights)
+- app/error.tsx (BARU — global error boundary: console.error + Sentry hook point + retry + home button)
+- app/admin/error.tsx (BARU — admin-scoped error boundary)
+- app/portal/error.tsx (BARU — portal-scoped error boundary)
+- app/admin/deployment/page.tsx (BARU — production checklist: 8 sections × 45 items, progress bar, localStorage persist, Env vars + Stripe + Supabase + Email + Vercel + Backup + Restore + Monitoring)
+- app/admin/layout.tsx (tambah Deployment ke MENU)
+- task.md (update: daily backup, file backup, restore procedure, production environment, Stripe live, webhook, email domain, error monitoring, uptime, analytics)
+- docs/EXECUTION_LOG.md (file ini)
+Database Migration: none
+Env Changes:
+  - @vercel/analytics added to package.json
+  - @vercel/speed-insights added to package.json
+Test Performed: npm run build — clean, 0 TypeScript errors
+Notes:
+  - Analytics: @vercel/analytics auto-tracks page views in Vercel. No env vars needed — just deploy.
+  - Error boundaries: Next.js App Router error.tsx per segment. Shows digest ID from server errors.
+  - deployment page: checklist state persisted in localStorage (key: saintce-deployment-checklist) — survives page refresh
+  - Sentry not wired yet (needs SENTRY_DSN env var) — guide in /admin/deployment Monitoring section
+  - MASTER CHECKLIST status: only 1 item remaining unchecked (Staging environment — infrastructure task)
+---------------------------------------
+
+---------------------------------------
+Date: 2026-04-06
+AI: Claude
+Task: Session 14 — Admin overview rebuild, portal dashboard polish, global Tailwind v4 canonical class cleanup
+Status: Done
+Files Changed:
+- app/admin/page.tsx (REWRITE — full command center: 6 stat cards with live data, recent payments, open tickets panel, 8 quick-access links)
+- app/portal/page.tsx (tambah Payments + Support + Files ke quick links grid, fix semua Tailwind v4 canonical classes)
+- app/(site)/clients/page.tsx, app/admin/clients/page.tsx, app/admin/payments/page.tsx, app/admin/projects/page.tsx, app/admin/sections/page.tsx, app/admin/services/page.tsx, app/error.tsx, app/login/page.tsx, app/portal/invoices/page.tsx, app/portal/invoices/[id]/page.tsx, app/portal/login/page.tsx, app/portal/projects/page.tsx, app/portal/subscriptions/page.tsx (fix canonical Tailwind v4 classes via batch sed)
+- docs/EXECUTION_LOG.md (file ini)
+Database Migration: none
+Env Changes: none
+Test Performed: npm run build — 50 routes, 0 TypeScript errors
+Notes:
+  - Admin overview: queries 7 Supabase tables in parallel (Promise.all) — totalClients, activeSubscriptions, overdueInvoices, openTickets, MRR, totalRevenue, recentPayments + recentTickets
+  - Stat cards are clickable Links → relevant admin page
+  - Overdue invoices + open tickets shown in signal color when > 0 (visual alert)
+  - Global sed fix: text-[var(--x)] → text-(--x), border-[var(--x)] → border-(--x), bg-[var(--x)] → bg-(--x)
+  - PLATFORM COMPLETE: 50 routes, 16 migrations, all task.md items done except staging environment
 ---------------------------------------

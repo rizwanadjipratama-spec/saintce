@@ -43,26 +43,26 @@ export default function PortalLoginPage() {
       <div className="w-full max-w-[420px]">
         <div className="saintce-panel p-8">
           <div className="mb-8">
-            <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-[var(--signal)]">
+            <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-(--signal)">
               Client Portal
             </p>
             <h1 className="mt-4 font-display text-[2.4rem] leading-none tracking-[-0.04em]">
               {siteConfig.brand.name}
             </h1>
-            <p className="mt-3 text-[0.95rem] leading-[1.7] text-[var(--muted)]">
+            <p className="mt-3 text-[0.95rem] leading-[1.7] text-(--muted)">
               Enter your registered email to receive a secure login link.
             </p>
           </div>
 
           {sent ? (
             <div className="saintce-inset rounded-[22px] p-5">
-              <p className="font-mono text-[0.72rem] uppercase tracking-[0.18em] text-[var(--signal)]">
+              <p className="font-mono text-[0.72rem] uppercase tracking-[0.18em] text-(--signal)">
                 Link sent
               </p>
-              <p className="mt-3 text-[0.95rem] leading-[1.7] text-[var(--text-primary)]">
+              <p className="mt-3 text-[0.95rem] leading-[1.7] text-(--text-primary)">
                 Check your inbox at <strong>{email}</strong>. Click the link to sign in.
               </p>
-              <p className="mt-2 text-sm text-[var(--muted)]">
+              <p className="mt-2 text-sm text-(--muted)">
                 The link expires in 60 minutes. If you don&apos;t see it, check your spam folder.
               </p>
             </div>
@@ -72,7 +72,7 @@ export default function PortalLoginPage() {
                 <div>
                   <label
                     htmlFor="portal-email"
-                    className="mb-2 block font-mono text-[0.72rem] uppercase tracking-[0.16em] text-[var(--muted)]"
+                    className="mb-2 block font-mono text-[0.72rem] uppercase tracking-[0.16em] text-(--muted)"
                   >
                     Email address
                   </label>
@@ -90,7 +90,7 @@ export default function PortalLoginPage() {
                 </div>
 
                 {error && (
-                  <p className="text-sm text-[var(--signal)]">{error}</p>
+                  <p className="text-sm text-(--signal)">{error}</p>
                 )}
 
                 <button
@@ -105,11 +105,11 @@ export default function PortalLoginPage() {
           )}
         </div>
 
-        <p className="mt-6 text-center text-sm text-[var(--muted)]">
+        <p className="mt-6 text-center text-sm text-(--muted)">
           Only registered clients can sign in. Contact{" "}
           <a
             href={`mailto:${siteConfig.contact.email}`}
-            className="text-[var(--muted-strong)] underline transition-colors hover:text-[var(--text-primary)]"
+            className="text-(--muted-strong) underline transition-colors hover:text-(--text-primary)"
           >
             {siteConfig.contact.email}
           </a>{" "}

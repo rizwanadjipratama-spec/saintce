@@ -72,15 +72,18 @@ export function proxy(request: NextRequest) {
     }
   }
 
-  // Portal auth first-pass guard — redirect unauthenticated requests before page HTML is served
-  if (pathname.startsWith("/portal") && !pathname.startsWith("/portal/login")) {
+  // App auth guard — redirect unauthenticated requests to /login before page HTML is served
+  const isAppPath = pathname.startsWith("/app")
+  const isPortalPath = pathname.startsWith("/portal") && !pathname.startsWith("/portal/login")
+
+  if (isAppPath || isPortalPath) {
     const hasSession =
       request.cookies.has("sb-access-token") ||
       request.cookies.getAll().some(
         ({ name }) => name.startsWith("sb-") && name.endsWith("-auth-token")
       )
     if (!hasSession) {
-      const loginUrl = new URL("/portal/login", request.url)
+      const loginUrl = new URL("/login", request.url)
       loginUrl.searchParams.set("next", pathname)
       return NextResponse.redirect(loginUrl)
     }
@@ -92,6 +95,7 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/ajx-core/:path*",
+    "/app/:path*",
     "/portal/:path*",
     "/api/contact",
     "/api/portal/:path*",

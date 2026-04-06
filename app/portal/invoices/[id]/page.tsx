@@ -99,7 +99,7 @@ export default function PortalInvoiceDetailPage() {
   }, [invoice, invoiceId])
 
   if (loading || !invoice) {
-    return <p className="text-[var(--muted)]">Loading invoice...</p>
+    return <p className="text-(--muted)">Loading invoice...</p>
   }
 
   const canPay = invoice.status === "issued" || invoice.status === "overdue"
@@ -109,7 +109,7 @@ export default function PortalInvoiceDetailPage() {
       <div className="mb-6 flex items-center justify-between gap-3">
         <Link
           href="/portal/invoices"
-          className="text-sm text-[var(--muted-strong)] transition-colors hover:text-[var(--text-primary)]"
+          className="text-sm text-(--muted-strong) transition-colors hover:text-(--text-primary)"
         >
           ← All invoices
         </Link>
@@ -124,12 +124,12 @@ export default function PortalInvoiceDetailPage() {
       </div>
 
       <div className="saintce-panel p-6 md:p-8">
-        <div className="flex items-start justify-between gap-4 border-b border-[var(--border-soft)] pb-6">
+        <div className="flex items-start justify-between gap-4 border-b border-(--border-soft) pb-6">
           <div>
-            <p className="font-mono text-[0.72rem] uppercase tracking-[0.16em] text-[var(--muted)]">
+            <p className="font-mono text-[0.72rem] uppercase tracking-[0.16em] text-(--muted)">
               Invoice
             </p>
-            <h1 className="mt-2 font-display text-3xl text-[var(--text-primary)]">
+            <h1 className="mt-2 font-display text-3xl text-(--text-primary)">
               {invoice.invoice_number}
             </h1>
           </div>
@@ -149,8 +149,8 @@ export default function PortalInvoiceDetailPage() {
             ...(invoice.paid_at ? [{ label: "Paid at", value: invoice.paid_at.slice(0, 10) }] : []),
           ].map(({ label, value }) => (
             <div key={label} className="saintce-inset rounded-[18px] p-4">
-              <p className="text-xs uppercase tracking-[0.14em] text-[var(--muted)]">{label}</p>
-              <p className="mt-2 text-[var(--text-primary)]">{value}</p>
+              <p className="text-xs uppercase tracking-[0.14em] text-(--muted)">{label}</p>
+              <p className="mt-2 text-(--text-primary)">{value}</p>
             </div>
           ))}
         </div>
@@ -158,11 +158,11 @@ export default function PortalInvoiceDetailPage() {
         {/* Line items */}
         {items.length > 0 && (
           <div className="mt-6">
-            <p className="mb-3 text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Line items</p>
-            <div className="overflow-hidden rounded-[18px] border border-[var(--border-soft)]">
+            <p className="mb-3 text-xs uppercase tracking-[0.14em] text-(--muted)">Line items</p>
+            <div className="overflow-hidden rounded-[18px] border border-(--border-soft)">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[var(--border-soft)] text-xs uppercase tracking-[0.12em] text-[var(--muted)]">
+                  <tr className="border-b border-(--border-soft) text-xs uppercase tracking-[0.12em] text-(--muted)">
                     <th className="px-4 py-3 text-left font-normal">Description</th>
                     <th className="px-4 py-3 text-right font-normal">Qty</th>
                     <th className="px-4 py-3 text-right font-normal">Unit price</th>
@@ -171,11 +171,11 @@ export default function PortalInvoiceDetailPage() {
                 </thead>
                 <tbody>
                   {items.map((item) => (
-                    <tr key={item.id} className="border-b border-[var(--border-soft)] last:border-0">
-                      <td className="px-4 py-3 text-[var(--text-primary)]">{item.description}</td>
-                      <td className="px-4 py-3 text-right text-[var(--muted)]">{item.quantity}</td>
-                      <td className="px-4 py-3 text-right text-[var(--muted)]">{formatCurrency(item.unit_price)}</td>
-                      <td className="px-4 py-3 text-right text-[var(--text-primary)]">{formatCurrency(item.total)}</td>
+                    <tr key={item.id} className="border-b border-(--border-soft) last:border-0">
+                      <td className="px-4 py-3 text-(--text-primary)">{item.description}</td>
+                      <td className="px-4 py-3 text-right text-(--muted)">{item.quantity}</td>
+                      <td className="px-4 py-3 text-right text-(--muted)">{formatCurrency(item.unit_price)}</td>
+                      <td className="px-4 py-3 text-right text-(--text-primary)">{formatCurrency(item.total)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -184,9 +184,9 @@ export default function PortalInvoiceDetailPage() {
           </div>
         )}
 
-        <div className="mt-8 flex items-end justify-between border-t border-[var(--border-soft)] pt-6">
+        <div className="mt-8 flex items-end justify-between border-t border-(--border-soft) pt-6">
           <div>
-            <p className="text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Total amount</p>
+            <p className="text-xs uppercase tracking-[0.14em] text-(--muted)">Total amount</p>
             <p className="mt-2 font-display text-[clamp(2.2rem,4vw,3rem)] leading-none tracking-[-0.04em]">
               {formatCurrency(invoice.amount)}
             </p>
@@ -204,7 +204,7 @@ export default function PortalInvoiceDetailPage() {
         </div>
 
         {error && (
-          <p className="mt-4 text-sm text-[var(--signal)]">{error}</p>
+          <p className="mt-4 text-sm text-(--signal)">{error}</p>
         )}
 
         {invoice.status === "paid" && (

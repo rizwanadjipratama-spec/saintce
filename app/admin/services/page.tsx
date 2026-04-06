@@ -92,13 +92,13 @@ export default function AdminServicesPage() {
   }, [loadData])
 
   if (loading) {
-    return <div className="text-[var(--muted)]">Loading services...</div>
+    return <div className="text-(--muted)">Loading services...</div>
   }
 
   return (
     <div>
-      <div className="border-b border-[var(--border-soft)] pb-8">
-        <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-[var(--signal)]">Services</p>
+      <div className="border-b border-(--border-soft) pb-8">
+        <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-(--signal)">Services</p>
         <h1 className="mt-4 font-display text-[clamp(2.4rem,4.5vw,4.6rem)] leading-none tracking-[-0.04em]">Recurring service catalog</h1>
       </div>
 
@@ -119,11 +119,11 @@ export default function AdminServicesPage() {
                 <option value="one_time">One time</option>
               </select>
             </div>
-            <label className="flex items-center gap-3 text-sm text-[var(--muted)]">
+            <label className="flex items-center gap-3 text-sm text-(--muted)">
               <input type="checkbox" checked={form.is_recurring} onChange={(e) => setForm((prev) => ({ ...prev, is_recurring: e.target.checked }))} />
               Recurring service
             </label>
-            {message && <p className="text-[var(--muted-strong)]">{message}</p>}
+            {message && <p className="text-(--muted-strong)">{message}</p>}
             <button onClick={handleSubmit} disabled={saving} className="saintce-button">{saving ? "Saving..." : "Create service"}</button>
           </div>
         </section>
@@ -131,11 +131,11 @@ export default function AdminServicesPage() {
         <section className="saintce-inset rounded-[28px] p-6">
           <div className="space-y-3">
             {services.map((service) => (
-              <div key={service.id} className="rounded-[22px] border border-[var(--border-soft)] px-4 py-4">
+              <div key={service.id} className="rounded-[22px] border border-(--border-soft) px-4 py-4">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <p className="text-lg text-[var(--text-primary)]">{service.name}</p>
-                    <p className="mt-1 text-sm text-[var(--muted)]">{service.project?.name || "Unknown project"} · {formatCurrency(service.price)} · {service.billing_interval}</p>
+                    <p className="text-lg text-(--text-primary)">{service.name}</p>
+                    <p className="mt-1 text-sm text-(--muted)">{service.project?.name || "Unknown project"} · {formatCurrency(service.price)} · {service.billing_interval}</p>
                   </div>
                   <button onClick={() => handleActivation(service.id, !service.is_active)} className="saintce-button saintce-button--ghost">
                     {service.is_active ? "Deactivate" : "Activate"}

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { fetchClients } from "@/lib/clients"
 import { getProjects, saveProjectRecord, changeProjectStatus } from "@/lib/projects/service"
 import type { ProjectRecord, ProjectStatus, ProjectType } from "@/lib/projects/types"
@@ -89,13 +90,13 @@ export default function AdminProjectsPage() {
   }, [loadData])
 
   if (loading) {
-    return <div className="text-[var(--muted)]">Loading projects...</div>
+    return <div className="text-(--muted)">Loading projects...</div>
   }
 
   return (
     <div>
-      <div className="border-b border-[var(--border-soft)] pb-8">
-        <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-[var(--signal)]">Projects</p>
+      <div className="border-b border-(--border-soft) pb-8">
+        <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-(--signal)">Projects</p>
         <h1 className="mt-4 font-display text-[clamp(2.4rem,4.5vw,4.6rem)] leading-none tracking-[-0.04em]">Project system</h1>
       </div>
 
@@ -120,7 +121,7 @@ export default function AdminProjectsPage() {
               </select>
             </div>
             <input value={form.domain} onChange={(e) => setForm((prev) => ({ ...prev, domain: e.target.value }))} className="saintce-input" placeholder="Domain" />
-            {message && <p className="text-[var(--muted-strong)]">{message}</p>}
+            {message && <p className="text-(--muted-strong)">{message}</p>}
             <button onClick={handleSubmit} disabled={saving} className="saintce-button">{saving ? "Saving..." : "Create project"}</button>
           </div>
         </section>
@@ -128,15 +129,16 @@ export default function AdminProjectsPage() {
         <section className="saintce-inset rounded-[28px] p-6">
           <div className="space-y-3">
             {projects.map((project) => (
-              <div key={project.id} className="rounded-[22px] border border-[var(--border-soft)] px-4 py-4">
+              <div key={project.id} className="rounded-[22px] border border-(--border-soft) px-4 py-4">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <p className="text-lg text-[var(--text-primary)]">{project.name}</p>
-                    <p className="mt-1 text-sm text-[var(--muted)]">{project.client?.name || "Unknown client"} · {project.type} · {project.status}</p>
+                    <p className="text-lg text-(--text-primary)">{project.name}</p>
+                    <p className="mt-1 text-sm text-(--muted)">{project.client?.name || "Unknown client"} · {project.type} · {project.status}</p>
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex flex-wrap gap-3">
                     <button onClick={() => handleStatus(project.id, "active")} className="saintce-button saintce-button--ghost">Activate</button>
                     <button onClick={() => handleStatus(project.id, "suspended")} className="saintce-button saintce-button--ghost">Suspend</button>
+                    <Link href={`/admin/projects/${project.id}/permissions`} className="saintce-button saintce-button--ghost">Permissions</Link>
                   </div>
                 </div>
               </div>

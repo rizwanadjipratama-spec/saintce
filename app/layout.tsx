@@ -1,5 +1,7 @@
 import "./globals.css"
 import { Cormorant_Garamond, DM_Sans, DM_Mono } from "next/font/google"
+import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import BackgroundCanvas from "@/components/effects/BackgroundCanvas"
 import MouseLight from "@/components/effects/MouseLight"
 import SmoothScroll from "@/components/providers/SmoothScroll"
@@ -56,6 +58,8 @@ export default function RootLayout({
         <SmoothScroll>
           {children}
         </SmoothScroll>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )

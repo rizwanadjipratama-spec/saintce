@@ -16,7 +16,7 @@ const SUB_STATUS_STYLES: Record<string, string> = {
   active: "text-emerald-200",
   past_due: "text-amber-200",
   suspended: "text-rose-300",
-  cancelled: "text-[var(--muted)]",
+  cancelled: "text-(--muted)",
 }
 
 export default function PortalProjectsPage() {
@@ -42,19 +42,19 @@ export default function PortalProjectsPage() {
   }, [load])
 
   if (loading) {
-    return <p className="text-[var(--muted)]">Loading projects...</p>
+    return <p className="text-(--muted)">Loading projects...</p>
   }
 
   return (
     <div>
-      <div className="border-b border-[var(--border-soft)] pb-8">
-        <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-[var(--signal)]">
+      <div className="border-b border-(--border-soft) pb-8">
+        <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-(--signal)">
           Client Portal
         </p>
         <h1 className="mt-4 font-display text-[clamp(2.4rem,4.5vw,4rem)] leading-none tracking-[-0.04em]">
           Your projects
         </h1>
-        <p className="mt-3 text-[var(--muted)]">{projects.length} project{projects.length !== 1 ? "s" : ""} found</p>
+        <p className="mt-3 text-(--muted)">{projects.length} project{projects.length !== 1 ? "s" : ""} found</p>
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
@@ -63,14 +63,14 @@ export default function PortalProjectsPage() {
             <div key={project.id} className="saintce-panel saintce-panel--inset p-6">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="font-mono text-[0.72rem] uppercase tracking-[0.18em] text-[var(--muted)]">
+                  <p className="font-mono text-[0.72rem] uppercase tracking-[0.18em] text-(--muted)">
                     {project.type}
                   </p>
-                  <h2 className="mt-2 font-display text-2xl text-[var(--text-primary)]">
+                  <h2 className="mt-2 font-display text-2xl text-(--text-primary)">
                     {project.name}
                   </h2>
                   {project.domain && (
-                    <p className="mt-1 text-sm text-[var(--muted)]">{project.domain}</p>
+                    <p className="mt-1 text-sm text-(--muted)">{project.domain}</p>
                   )}
                 </div>
                 <span
@@ -82,7 +82,7 @@ export default function PortalProjectsPage() {
 
               {project.services.length > 0 && (
                 <div className="mt-6 space-y-3">
-                  <p className="font-mono text-[0.72rem] uppercase tracking-[0.14em] text-[var(--muted)]">
+                  <p className="font-mono text-[0.72rem] uppercase tracking-[0.14em] text-(--muted)">
                     Services
                   </p>
                   {project.services.map((svc) => (
@@ -91,21 +91,21 @@ export default function PortalProjectsPage() {
                       className="saintce-inset flex items-center justify-between rounded-[20px] px-4 py-3"
                     >
                       <div>
-                        <p className="text-[0.95rem] text-[var(--text-primary)]">{svc.name}</p>
-                        <p className="mt-0.5 text-xs text-[var(--muted)]">
+                        <p className="text-[0.95rem] text-(--text-primary)">{svc.name}</p>
+                        <p className="mt-0.5 text-xs text-(--muted)">
                           {formatCurrency(svc.price)} / {svc.billing_interval}
                         </p>
                       </div>
                       <div className="text-right">
                         {svc.subscription ? (
-                          <p className={`text-xs font-medium uppercase tracking-[0.12em] ${SUB_STATUS_STYLES[svc.subscription.status] ?? "text-[var(--muted)]"}`}>
+                          <p className={`text-xs font-medium uppercase tracking-[0.12em] ${SUB_STATUS_STYLES[svc.subscription.status] ?? "text-(--muted)"}`}>
                             {svc.subscription.status.replace("_", " ")}
                           </p>
                         ) : (
-                          <p className="text-xs text-[var(--muted)]">No subscription</p>
+                          <p className="text-xs text-(--muted)">No subscription</p>
                         )}
                         {svc.subscription?.next_billing_date && (
-                          <p className="mt-0.5 text-xs text-[var(--muted)]">
+                          <p className="mt-0.5 text-xs text-(--muted)">
                             Next: {svc.subscription.next_billing_date.slice(0, 10)}
                           </p>
                         )}
@@ -117,7 +117,7 @@ export default function PortalProjectsPage() {
             </div>
           ))
         ) : (
-          <div className="col-span-2 text-[var(--muted)]">No projects assigned yet.</div>
+          <div className="col-span-2 text-(--muted)">No projects assigned yet.</div>
         )}
       </div>
     </div>

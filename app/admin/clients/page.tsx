@@ -176,13 +176,13 @@ export default function AdminClientsPage() {
   const summary = useMemo(() => summarizeClients(clients), [clients])
 
   if (loading) {
-    return <div className="text-[var(--muted)]">Loading client registry...</div>
+    return <div className="text-(--muted)">Loading client registry...</div>
   }
 
   return (
     <div>
-      <div className="border-b border-[var(--border-soft)] pb-8">
-        <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-[var(--signal)]">Clients</p>
+      <div className="border-b border-(--border-soft) pb-8">
+        <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-(--signal)">Clients</p>
         <h1 className="mt-4 font-display text-[clamp(2.4rem,4.5vw,4.6rem)] leading-none tracking-[-0.04em]">
           Client registry
         </h1>
@@ -196,7 +196,7 @@ export default function AdminClientsPage() {
           { label: "Archived", value: summary.archived },
         ].map((card) => (
           <div key={card.label} className="saintce-inset rounded-[24px] p-5">
-            <p className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">{card.label}</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-(--muted)">{card.label}</p>
             <p className="mt-3 font-display text-4xl">{card.value}</p>
           </div>
         ))}
@@ -224,7 +224,7 @@ export default function AdminClientsPage() {
               <option value="archived">Archived</option>
             </select>
 
-            {message && <p className="text-[var(--muted-strong)]">{message}</p>}
+            {message && <p className="text-(--muted-strong)">{message}</p>}
 
             <div className="flex flex-wrap gap-3">
               <button onClick={handleSubmit} disabled={submitting} className="saintce-button">
@@ -242,14 +242,14 @@ export default function AdminClientsPage() {
         <section className="saintce-inset rounded-[28px] p-6">
           <div className="space-y-3">
             {clients.map((client) => (
-              <div key={client.id} className="flex flex-col gap-4 rounded-[22px] border border-[var(--border-soft)] px-4 py-4 md:flex-row md:items-center md:justify-between">
+              <div key={client.id} className="flex flex-col gap-4 rounded-[22px] border border-(--border-soft) px-4 py-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <p className="text-lg text-[var(--text-primary)]">{client.name}</p>
-                  <p className="mt-1 text-sm text-[var(--muted)]">
+                  <p className="text-lg text-(--text-primary)">{client.name}</p>
+                  <p className="mt-1 text-sm text-(--muted)">
                     {client.company_name || client.category || "Uncategorized"} · {client.status}
                   </p>
                   {(client.email || client.phone) && (
-                    <p className="mt-1 text-sm text-[var(--muted)]">{client.email || "No email"} · {client.phone || "No phone"}</p>
+                    <p className="mt-1 text-sm text-(--muted)">{client.email || "No email"} · {client.phone || "No phone"}</p>
                   )}
                 </div>
 

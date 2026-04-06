@@ -4,6 +4,20 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
 
+  async redirects() {
+    return [
+      { source: "/portal", destination: "/app", permanent: true },
+      { source: "/portal/login", destination: "/login", permanent: true },
+      { source: "/portal/projects", destination: "/app/projects", permanent: true },
+      { source: "/portal/subscriptions", destination: "/app/subscriptions", permanent: true },
+      { source: "/portal/invoices", destination: "/app/invoices", permanent: true },
+      { source: "/portal/invoices/:id", destination: "/app/invoices/:id", permanent: true },
+      { source: "/portal/payments", destination: "/app/payments", permanent: true },
+      { source: "/portal/files", destination: "/app/files", permanent: true },
+      { source: "/portal/tickets", destination: "/app/tickets", permanent: true },
+    ]
+  },
+
   async headers() {
     return [
       {

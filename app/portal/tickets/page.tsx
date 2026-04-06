@@ -87,6 +87,12 @@ export default function PortalTicketsPage() {
       setMessage("Ticket submitted.")
       await loadTickets(session.clientId)
       await selectTicket(id)
+      // Fire-and-forget: notify client + admin
+      void fetch("/api/tickets/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "ticket_opened", ticketId: id }),
+      })
     } catch (err) {
       setMessage(getErrorMessage(err, "Unable to submit ticket."))
     } finally {

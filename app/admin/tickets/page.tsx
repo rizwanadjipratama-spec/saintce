@@ -104,6 +104,12 @@ export default function AdminTicketsPage() {
       setReply("")
       const c = await getTicketComments(selectedId)
       setComments(c)
+      // Fire-and-forget: notify client of admin reply
+      void fetch("/api/tickets/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "admin_reply", ticketId: selectedId }),
+      })
     } catch (err) {
       setMessage(getErrorMessage(err, "Unable to add comment."))
     } finally {

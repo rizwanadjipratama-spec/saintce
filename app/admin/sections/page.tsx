@@ -131,13 +131,13 @@ export default function AdminSectionsPage() {
   }, [about, sections])
 
   if (loading) {
-    return <div className="text-[var(--muted)]">Loading section CMS...</div>
+    return <div className="text-(--muted)">Loading section CMS...</div>
   }
 
   return (
     <div>
-      <div className="border-b border-[var(--border-soft)] pb-8">
-        <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-[var(--signal)]">Sections</p>
+      <div className="border-b border-(--border-soft) pb-8">
+        <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-(--signal)">Sections</p>
         <h1 className="mt-4 font-display text-[clamp(2.4rem,4.5vw,4.6rem)] leading-none tracking-[-0.04em]">
           Site section CMS
         </h1>
@@ -243,7 +243,7 @@ export default function AdminSectionsPage() {
             <input value={sections.process.eyebrow} onChange={(e) => setSections((prev) => ({ ...prev, process: { ...prev.process, eyebrow: e.target.value } }))} className="saintce-input" placeholder="Process eyebrow" />
             <textarea value={sections.process.title} onChange={(e) => setSections((prev) => ({ ...prev, process: { ...prev.process, title: e.target.value } }))} className="saintce-input min-h-[120px]" placeholder="Process title" />
             {sections.process.items.map((item, index) => (
-              <div key={index} className="rounded-[22px] border border-[var(--border-soft)] p-4">
+              <div key={index} className="rounded-[22px] border border-(--border-soft) p-4">
                 <div className="grid gap-4">
                   <div className="grid gap-4 md:grid-cols-[120px_1fr]">
                     <input value={item.number} onChange={(e) => setSections((prev) => ({ ...prev, process: { ...prev.process, items: prev.process.items.map((entry, entryIndex) => entryIndex === index ? { ...entry, number: e.target.value } : entry) } }))} className="saintce-input" placeholder="Number" />
@@ -279,7 +279,7 @@ export default function AdminSectionsPage() {
         <button onClick={handleSaveAll} disabled={saving} className="saintce-button">
           {saving ? "Saving..." : "Save all sections"}
         </button>
-        {message && <p className="text-[var(--muted-strong)]">{message}</p>}
+        {message && <p className="text-(--muted-strong)">{message}</p>}
       </div>
     </div>
   )

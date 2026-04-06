@@ -63,19 +63,19 @@ export default function PortalSubscriptionsPage() {
   }, [load])
 
   if (loading) {
-    return <p className="text-[var(--muted)]">Loading subscriptions...</p>
+    return <p className="text-(--muted)">Loading subscriptions...</p>
   }
 
   return (
     <div>
-      <div className="border-b border-[var(--border-soft)] pb-8">
-        <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-[var(--signal)]">
+      <div className="border-b border-(--border-soft) pb-8">
+        <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-(--signal)">
           Client Portal
         </p>
         <h1 className="mt-4 font-display text-[clamp(2.4rem,4.5vw,4rem)] leading-none tracking-[-0.04em]">
           Subscriptions
         </h1>
-        <p className="mt-3 text-[var(--muted)]">{subscriptions.length} subscription{subscriptions.length !== 1 ? "s" : ""}</p>
+        <p className="mt-3 text-(--muted)">{subscriptions.length} subscription{subscriptions.length !== 1 ? "s" : ""}</p>
       </div>
 
       <div className="mt-8 space-y-4">
@@ -87,13 +87,13 @@ export default function PortalSubscriptionsPage() {
               <div key={sub.serviceId} className="saintce-panel saintce-panel--inset p-6">
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div>
-                    <p className="font-mono text-[0.72rem] uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <p className="font-mono text-[0.72rem] uppercase tracking-[0.16em] text-(--muted)">
                       {sub.projectName}
                     </p>
-                    <h2 className="mt-2 font-display text-2xl text-[var(--text-primary)]">
+                    <h2 className="mt-2 font-display text-2xl text-(--text-primary)">
                       {sub.serviceName}
                     </h2>
-                    <p className="mt-1 text-[0.95rem] text-[var(--muted)]">
+                    <p className="mt-1 text-[0.95rem] text-(--muted)">
                       {formatCurrency(sub.price)} / {sub.billingInterval}
                     </p>
                   </div>
@@ -105,23 +105,23 @@ export default function PortalSubscriptionsPage() {
                   </span>
                 </div>
 
-                <div className="mt-5 grid gap-4 border-t border-[var(--border-soft)] pt-5 sm:grid-cols-3">
+                <div className="mt-5 grid gap-4 border-t border-(--border-soft) pt-5 sm:grid-cols-3">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Billing cycle</p>
-                    <p className="mt-1 text-[var(--text-primary)] capitalize">{subscription.billing_interval}</p>
+                    <p className="text-xs uppercase tracking-[0.14em] text-(--muted)">Billing cycle</p>
+                    <p className="mt-1 text-(--text-primary) capitalize">{subscription.billing_interval}</p>
                   </div>
                   {subscription.current_period_end && (
                     <div>
-                      <p className="text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Current period ends</p>
-                      <p className="mt-1 text-[var(--text-primary)]">
+                      <p className="text-xs uppercase tracking-[0.14em] text-(--muted)">Current period ends</p>
+                      <p className="mt-1 text-(--text-primary)">
                         {subscription.current_period_end.slice(0, 10)}
                       </p>
                     </div>
                   )}
                   {subscription.next_billing_date && (
                     <div>
-                      <p className="text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Next billing date</p>
-                      <p className="mt-1 text-[var(--text-primary)]">
+                      <p className="text-xs uppercase tracking-[0.14em] text-(--muted)">Next billing date</p>
+                      <p className="mt-1 text-(--text-primary)">
                         {subscription.next_billing_date.slice(0, 10)}
                       </p>
                     </div>
@@ -147,7 +147,7 @@ export default function PortalSubscriptionsPage() {
             )
           })
         ) : (
-          <p className="text-[var(--muted)]">No subscriptions found.</p>
+          <p className="text-(--muted)">No subscriptions found.</p>
         )}
       </div>
     </div>

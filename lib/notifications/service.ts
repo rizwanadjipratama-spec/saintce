@@ -296,3 +296,89 @@ export async function sendSubscriptionReactivatedEmail(args: {
     `,
   })
 }
+
+export async function sendTicketOpenedEmail(args: {
+  to: string
+  clientName: string
+  ticketSubject: string
+  ticketId: string
+  portalUrl: string
+}) {
+  validateNotificationPayload(args.to)
+
+  return sendNotification({
+    to: args.to,
+    subject: `Support ticket received — ${args.ticketSubject}`,
+    html: `
+      <div style="${BASE_STYLE}">
+        <h2 style="margin:0 0 16px;">Ticket Received</h2>
+        <p>Hello ${args.clientName},</p>
+        <p>We've received your support request and our team will get back to you as soon as possible.</p>
+        <table style="border-collapse:collapse; width:100%; margin:16px 0;">
+          <tr><td style="padding:6px 12px 6px 0; ${MUTED}">Subject</td><td style="padding:6px 0;"><strong>${args.ticketSubject}</strong></td></tr>
+          <tr><td style="padding:6px 12px 6px 0; ${MUTED}">Reference</td><td style="padding:6px 0; font-family:monospace; font-size:0.85em;">${args.ticketId}</td></tr>
+          <tr><td style="padding:6px 12px 6px 0; ${MUTED}">Status</td><td style="padding:6px 0; color:#16a34a;">Open</td></tr>
+        </table>
+        <p>You can view and reply to your ticket from your <a href="${args.portalUrl}" style="color:#4f46e5;">client portal</a>.</p>
+        <p style="${MUTED}">Saintce Support</p>
+      </div>
+    `,
+  })
+}
+
+export async function sendTicketReplyEmail(args: {
+  to: string
+  clientName: string
+  ticketSubject: string
+  replyBody: string
+  portalUrl: string
+}) {
+  validateNotificationPayload(args.to)
+
+  return sendNotification({
+    to: args.to,
+    subject: `New reply on your ticket — ${args.ticketSubject}`,
+    html: `
+      <div style="${BASE_STYLE}">
+        <h2 style="margin:0 0 16px;">New Reply</h2>
+        <p>Hello ${args.clientName},</p>
+        <p>Our support team has replied to your ticket: <strong>${args.ticketSubject}</strong></p>
+        <div style="border-left:3px solid #4f46e5; padding:12px 16px; margin:16px 0; background:#f5f5f5; border-radius:0 8px 8px 0;">
+          <p style="margin:0; white-space:pre-line;">${args.replyBody}</p>
+        </div>
+        <p>View the full conversation and reply in your <a href="${args.portalUrl}" style="color:#4f46e5;">client portal</a>.</p>
+        <p style="${MUTED}">Saintce Support</p>
+      </div>
+    `,
+  })
+}
+
+export async function sendTicketAdminNotificationEmail(args: {
+  to: string
+  adminName: string
+  clientName: string
+  ticketSubject: string
+  ticketId: string
+  priority: string
+}) {
+  validateNotificationPayload(args.to)
+
+  return sendNotification({
+    to: args.to,
+    subject: `[${args.priority.toUpperCase()}] New support ticket — ${args.ticketSubject}`,
+    html: `
+      <div style="${BASE_STYLE}">
+        <h2 style="margin:0 0 16px;">New Support Ticket</h2>
+        <p>Hello ${args.adminName},</p>
+        <p>A new support ticket has been opened by <strong>${args.clientName}</strong>.</p>
+        <table style="border-collapse:collapse; width:100%; margin:16px 0;">
+          <tr><td style="padding:6px 12px 6px 0; ${MUTED}">Subject</td><td style="padding:6px 0;"><strong>${args.ticketSubject}</strong></td></tr>
+          <tr><td style="padding:6px 12px 6px 0; ${MUTED}">Client</td><td style="padding:6px 0;">${args.clientName}</td></tr>
+          <tr><td style="padding:6px 12px 6px 0; ${MUTED}">Priority</td><td style="padding:6px 0;">${args.priority}</td></tr>
+          <tr><td style="padding:6px 12px 6px 0; ${MUTED}">ID</td><td style="padding:6px 0; font-family:monospace; font-size:0.85em;">${args.ticketId}</td></tr>
+        </table>
+        <p style="${MUTED}">Saintce Control</p>
+      </div>
+    `,
+  })
+}

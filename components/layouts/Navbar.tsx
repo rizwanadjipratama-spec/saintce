@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
+import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { ANIMATION } from "@/lib/animation"
 import { siteConfig } from "@/lib/site-config"
@@ -17,7 +18,6 @@ export default function Navbar() {
       router.back()
       return
     }
-
     router.push("/")
   }, [router])
 
@@ -35,9 +35,10 @@ export default function Navbar() {
   const iconTransition = { duration: 0.3, ease: [0.16, 1, 0.3, 1] as const }
 
   return (
-    <header className="fixed top-0 left-0 z-[100] w-full px-4 pt-4 md:px-8">
-      <div className="saintce-nav mx-auto flex h-[78px] max-w-[1460px] items-center justify-between px-6 md:px-8">
-        <div className="hidden items-center text-sm text-[var(--muted-strong)] md:flex">
+    <header className="fixed top-0 left-0 z-100 w-full px-4 pt-4 md:px-8">
+      <div className="saintce-nav mx-auto flex h-19.5 max-w-365 items-center justify-between px-6 md:px-8">
+        {/* Left — nav links */}
+        <div className="hidden items-center text-sm text-(--muted-strong) md:flex">
           <AnimatePresence mode="wait">
             {isRouteMode ? (
               <motion.button
@@ -47,7 +48,7 @@ export default function Navbar() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: ANIMATION.durationMedium, ease: ANIMATION.easing }}
-                className="transition-colors hover:text-[var(--text-primary)]"
+                className="transition-colors hover:text-(--text-primary)"
               >
                 Home
               </motion.button>
@@ -64,7 +65,7 @@ export default function Navbar() {
                   <a
                     key={item.label}
                     href={item.href}
-                    className="transition-colors hover:text-[var(--text-primary)]"
+                    className="transition-colors hover:text-(--text-primary)"
                   >
                     {item.label}
                   </a>
@@ -74,58 +75,45 @@ export default function Navbar() {
           </AnimatePresence>
         </div>
 
-        <div className="absolute left-1/2 -translate-x-1/2 select-none text-sm font-display tracking-[0.32em] text-[var(--text-primary)]">
+        {/* Center — brand */}
+        <div className="absolute left-1/2 -translate-x-1/2 select-none font-display text-sm tracking-[0.32em] text-(--text-primary)">
           {siteConfig.brand.name}
         </div>
 
-        <div className="flex items-center gap-6">
+        {/* Right — clients + login */}
+        <div className="flex items-center gap-4">
           {!isRouteMode && (
-            <a
-              href="/clients"
-              className="hidden text-sm text-[var(--muted-strong)] transition-colors hover:text-[var(--text-primary)] md:block"
+            <Link
+              href="/login"
+              className="hidden saintce-button min-h-9.5 px-5 text-sm md:inline-flex"
             >
-              Clients
-            </a>
+              Login
+            </Link>
           )}
 
           <button
             onClick={handleMobileIconClick}
-            className="z-[200] text-xl text-[var(--text-primary)] md:hidden"
+            className="z-200 text-xl text-(--text-primary) md:hidden"
             aria-label={shouldShowClose ? "Close menu" : "Open menu"}
           >
             <motion.svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <motion.line
-                x1="4"
-                y1="7"
-                x2="20"
-                y2="7"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
+                x1="4" y1="7" x2="20" y2="7"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round"
                 style={{ transformOrigin: "50% 50%", willChange: "transform, opacity" }}
                 animate={shouldShowClose ? { y: 5, rotate: 45 } : { y: 0, rotate: 0 }}
                 transition={iconTransition}
               />
               <motion.line
-                x1="4"
-                y1="12"
-                x2="20"
-                y2="12"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
+                x1="4" y1="12" x2="20" y2="12"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round"
                 style={{ transformOrigin: "50% 50%", willChange: "transform, opacity" }}
                 animate={shouldShowClose ? { opacity: 0 } : { opacity: 1 }}
                 transition={iconTransition}
               />
               <motion.line
-                x1="4"
-                y1="17"
-                x2="20"
-                y2="17"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
+                x1="4" y1="17" x2="20" y2="17"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round"
                 style={{ transformOrigin: "50% 50%", willChange: "transform, opacity" }}
                 animate={shouldShowClose ? { y: -5, rotate: -45 } : { y: 0, rotate: 0 }}
                 transition={iconTransition}
@@ -135,6 +123,7 @@ export default function Navbar() {
         </div>
       </div>
 
+      {/* Mobile menu */}
       <AnimatePresence>
         {!isRouteMode && menuOpen && (
           <motion.div
@@ -145,24 +134,20 @@ export default function Navbar() {
             style={{ willChange: "transform, opacity" }}
             className="saintce-nav mx-4 mt-4 overflow-hidden md:hidden"
           >
-            <div className="flex flex-col gap-6 px-6 py-10 text-lg text-[var(--muted-strong)]">
+            <div className="flex flex-col gap-6 px-6 py-10 text-lg text-(--muted-strong)">
               {itemLinks.map((item) => (
                 <a
                   key={item.label}
                   href={item.href}
                   onClick={closeMenu}
-                  className="transition-colors hover:text-[var(--text-primary)]"
+                  className="transition-colors hover:text-(--text-primary)"
                 >
                   {item.label}
                 </a>
               ))}
-              <a
-                href="/clients"
-                onClick={closeMenu}
-                className="transition-colors hover:text-[var(--text-primary)]"
-              >
-                Clients
-              </a>
+              <Link href="/login" onClick={closeMenu} className="transition-colors hover:text-(--text-primary)">
+                Login
+              </Link>
             </div>
           </motion.div>
         )}

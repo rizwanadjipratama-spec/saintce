@@ -653,7 +653,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
         amountLabel: contact.amountLabel ?? "",
         paidAt: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
         paymentReference: piRef,
-        portalUrl: `${getBaseUrl()}/portal/invoices`,
+        portalUrl: `${getBaseUrl()}/app/invoices`,
       }).catch(() => undefined)
     }
   }).catch(() => undefined)
@@ -1013,8 +1013,8 @@ export async function createPortalStripeCheckoutSession(invoiceId: string) {
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     customer: customerId,
-    success_url: `${getBaseUrl()}/portal/invoices/${invoice.id}?checkout=success`,
-    cancel_url: `${getBaseUrl()}/portal/invoices/${invoice.id}?checkout=cancelled`,
+    success_url: `${getBaseUrl()}/app/invoices/${invoice.id}?checkout=success`,
+    cancel_url: `${getBaseUrl()}/app/invoices/${invoice.id}?checkout=cancelled`,
     metadata: {
       invoice_id: invoice.id,
       subscription_id: invoice.subscription_id,

@@ -76,13 +76,13 @@ export default function AdminPaymentsPage() {
   }, [form, loadData])
 
   if (loading) {
-    return <div className="text-[var(--muted)]">Loading payments...</div>
+    return <div className="text-(--muted)">Loading payments...</div>
   }
 
   return (
     <div>
-      <div className="border-b border-[var(--border-soft)] pb-8">
-        <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-[var(--signal)]">Payments</p>
+      <div className="border-b border-(--border-soft) pb-8">
+        <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-(--signal)">Payments</p>
         <h1 className="mt-4 font-display text-[clamp(2.4rem,4.5vw,4.6rem)] leading-none tracking-[-0.04em]">Payment reconciliation</h1>
       </div>
 
@@ -99,7 +99,7 @@ export default function AdminPaymentsPage() {
               <input value={form.payment_gateway} onChange={(e) => setForm((prev) => ({ ...prev, payment_gateway: e.target.value }))} className="saintce-input" placeholder="Gateway" />
             </div>
             <input value={form.payment_reference} onChange={(e) => setForm((prev) => ({ ...prev, payment_reference: e.target.value }))} className="saintce-input" placeholder="Reference" />
-            {message && <p className="text-[var(--muted-strong)]">{message}</p>}
+            {message && <p className="text-(--muted-strong)">{message}</p>}
             <button onClick={handleSubmit} disabled={saving} className="saintce-button">{saving ? "Recording..." : "Record payment"}</button>
           </div>
         </section>
@@ -107,9 +107,9 @@ export default function AdminPaymentsPage() {
         <section className="saintce-inset rounded-[28px] p-6">
           <div className="space-y-3">
             {payments.map((payment) => (
-              <div key={payment.id} className="rounded-[22px] border border-[var(--border-soft)] px-4 py-4">
-                <p className="text-lg text-[var(--text-primary)]">{payment.invoice?.invoice_number || "Payment"}</p>
-                <p className="mt-1 text-sm text-[var(--muted)]">{formatCurrency(payment.amount)} · {payment.payment_gateway || "manual"} · {payment.status}</p>
+              <div key={payment.id} className="rounded-[22px] border border-(--border-soft) px-4 py-4">
+                <p className="text-lg text-(--text-primary)">{payment.invoice?.invoice_number || "Payment"}</p>
+                <p className="mt-1 text-sm text-(--muted)">{formatCurrency(payment.amount)} · {payment.payment_gateway || "manual"} · {payment.status}</p>
               </div>
             ))}
           </div>

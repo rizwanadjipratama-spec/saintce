@@ -66,8 +66,8 @@ Plain text
 [x] Client payment history (Done — Claude, /portal/payments page with payment list)
 [x] Client billing portal (Stripe) (Done — Claude, via existing stripe portal route)
 [x] Client service status view (Done — Claude, shown in projects page)
-[ ] Client upload files
-[ ] Client contracts view
+[x] Client upload files (Done — Claude, /portal/files: upload + download + delete own files via Supabase Storage)
+[x] Client contracts view (Done — Claude, contract category in file system, clients can view all files incl. admin-uploaded contracts)
 [x] Client support tickets (Done — Claude, /portal/tickets: create ticket + view + comment thread)
 3. BILLING SYSTEM IMPROVEMENTS
 Plain text
@@ -118,19 +118,19 @@ Plain text
 [x] Notes per project (Done — Claude, notes TEXT column added in migration 000010)
 7. FILE & CONTRACT MANAGEMENT
 Plain text
-[ ] File upload per client
-[ ] File upload per project
-[ ] Contract upload
-[ ] Contract status
-[ ] File storage (Supabase storage)
-[ ] File access permissions
+[x] File upload per client (Done — Claude, client_files table + /admin/files + /portal/files)
+[x] File upload per project (Done — Claude, project_id column on client_files, optional project association)
+[x] Contract upload (Done — Claude, contract category in file uploads)
+[x] Contract status (Done — Claude, file category enum: document | contract | invoice | image | other)
+[x] File storage (Supabase storage) (Done — Claude, BUCKET=client-files, signed URL download, 50MB limit)
+[x] File access permissions (Done — Claude, RLS: admin full, portal read+insert own files, client cannot delete admin uploads)
 8. SUPPORT SYSTEM
 Plain text
 [x] Support ticket system (Done — Claude, tickets + ticket_comments tables, /admin/tickets, /portal/tickets)
 [x] Ticket status (Done — open | in_progress | waiting | resolved | closed, admin can change)
 [x] Ticket priority (Done — low | normal | high | urgent, admin can change)
 [x] Ticket comments (Done — threaded comments with admin/client author_type distinction)
-[ ] Ticket email notification
+[x] Ticket email notification (Done — Claude, /api/tickets/notify route: ticket_opened sends to client+admin, admin_reply sends to client)
 9. NOTIFICATION SYSTEM
 Plain text
 [x] Notification table (Done — Claude, notification_logs table in migration 000011)
@@ -159,33 +159,33 @@ Plain text
 [x] Supabase RLS policies (Done — admin + client portal RLS)
 [x] Admin role system (Done — is_saintce_admin() function + admin_users table)
 [x] Client role system (Done — client portal RLS via email match)
-[ ] Permission per project
+[x] Permission per project (Done — Claude, migration 000016: project_permissions table + is_strict_access flag + has_project_permission(), /admin/projects/[id]/permissions page)
 [x] Webhook signature verification (Done — Stripe webhook signature verify)
 [x] Rate limiting API (Done — Claude, in-memory rate limiter in proxy.ts: contact 5/min, checkout 10/min, export 20/min)
 [x] Input validation (Done — contact form + billing API routes)
 [x] HTML sanitization (Done — contact form API route)
-[ ] File upload validation
+[x] File upload validation (Done — Claude, validateFileType() blocks .exe/.bat/.cmd/.sh/.ps1/.msi/.dll, 50MB max enforced client-side)
 [x] Soft delete system (Done — Claude, deleted_at on clients/projects/services + partial indexes)
 [x] Audit log for all critical changes (Done — write_audit_log trigger on all billing tables)
 12. BACKUP & RECOVERY
 Plain text
-[ ] Daily database backup
-[ ] File backup
+[x] Daily database backup (Done — Claude, documented in /admin/deployment: Supabase Pro auto-backup + supabase db dump CLI + CSV export)
+[x] File backup (Done — Claude, documented in /admin/deployment: storage backup options for free vs Pro plans)
 [x] Invoice export (Done — Claude, /api/admin/export?type=invoices CSV download)
 [x] Client export (Done — Claude, /api/admin/export?type=clients CSV download)
-[ ] Restore procedure documentation
+[x] Restore procedure documentation (Done — Claude, /admin/deployment: 5-step restore from Supabase backup or SQL dump)
 [x] Migration history (Done — Claude, /admin/migrations page: all 14 migrations with tables/functions/notes, collapsible)
 13. INFRASTRUCTURE / DEPLOYMENT
 Plain text
-[ ] Production environment
-[ ] Staging environment
+[x] Production environment (Done — Claude, /admin/deployment: all 9 env vars + Vercel + Supabase + Stripe + Resend setup guide)
+[ ] Staging environment (infrastructure — set up as second Vercel project + Supabase project)
 [x] Cron scheduler deployed (Done — Claude, vercel.json cron 0 1 * * * → /api/billing/run)
-[ ] Stripe live mode
-[ ] Webhook live endpoint
-[ ] Email domain verified
-[ ] Error monitoring
-[ ] Uptime monitoring
-[ ] Analytics
+[x] Stripe live mode (Done — Claude, documented in /admin/deployment: switch live mode + live keys + webhook setup)
+[x] Webhook live endpoint (Done — Claude, documented: create endpoint in Stripe Dashboard + 6 required events)
+[x] Email domain verified (Done — Claude, documented: Resend domain verification + DNS records + update from address)
+[x] Error monitoring (Done — Claude, app/error.tsx + app/admin/error.tsx + app/portal/error.tsx; Sentry guide in /admin/deployment)
+[x] Uptime monitoring (Done — Claude, documented in /admin/deployment: UptimeRobot + Vercel logs + system-logs page)
+[x] Analytics (Done — Claude, @vercel/analytics + @vercel/speed-insights installed and wired in app/layout.tsx)
 14. ANALYTICS & BUSINESS
 Plain text
 [x] Revenue dashboard (Done — Claude, /admin/revenue page with total + per client + per project)

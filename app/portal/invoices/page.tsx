@@ -46,22 +46,22 @@ export default function PortalInvoicesPage() {
     .reduce((sum, inv) => sum + inv.amount, 0)
 
   if (loading) {
-    return <p className="text-[var(--muted)]">Loading invoices...</p>
+    return <p className="text-(--muted)">Loading invoices...</p>
   }
 
   return (
     <div>
-      <div className="flex flex-col gap-4 border-b border-[var(--border-soft)] pb-8 md:flex-row md:items-end md:justify-between">
+      <div className="flex flex-col gap-4 border-b border-(--border-soft) pb-8 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-[var(--signal)]">
+          <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-(--signal)">
             Client Portal
           </p>
           <h1 className="mt-4 font-display text-[clamp(2.4rem,4.5vw,4rem)] leading-none tracking-[-0.04em]">
             Invoices
           </h1>
           {outstanding > 0 && (
-            <p className="mt-3 text-[var(--muted)]">
-              Outstanding: <span className="text-[var(--signal)]">{formatCurrency(outstanding)}</span>
+            <p className="mt-3 text-(--muted)">
+              Outstanding: <span className="text-(--signal)">{formatCurrency(outstanding)}</span>
             </p>
           )}
         </div>
@@ -84,21 +84,21 @@ export default function PortalInvoicesPage() {
           filtered.map((inv) => (
             <div
               key={inv.id}
-              className="flex flex-col gap-3 rounded-[22px] border border-[var(--border-soft)] px-4 py-4 md:flex-row md:items-center md:justify-between"
+              className="flex flex-col gap-3 rounded-[22px] border border-(--border-soft) px-4 py-4 md:flex-row md:items-center md:justify-between"
             >
               <div>
                 <div className="flex items-center gap-3">
-                  <p className="font-display text-xl text-[var(--text-primary)]">{inv.invoice_number}</p>
+                  <p className="font-display text-xl text-(--text-primary)">{inv.invoice_number}</p>
                   <span
                     className={`rounded-full border px-3 py-1 text-xs uppercase tracking-[0.14em] ${STATUS_STYLES[inv.status] ?? STATUS_STYLES.draft}`}
                   >
                     {inv.status}
                   </span>
                 </div>
-                <p className="mt-1 text-sm text-[var(--muted)]">
+                <p className="mt-1 text-sm text-(--muted)">
                   {inv.project_name} · {inv.service_name}
                 </p>
-                <p className="mt-0.5 text-xs text-[var(--muted)]">
+                <p className="mt-0.5 text-xs text-(--muted)">
                   Issued {inv.issue_date} · Due {inv.due_date}
                   {inv.paid_at && ` · Paid ${inv.paid_at.slice(0, 10)}`}
                 </p>
@@ -118,7 +118,7 @@ export default function PortalInvoicesPage() {
             </div>
           ))
         ) : (
-          <p className="text-[var(--muted)]">No invoices found for this filter.</p>
+          <p className="text-(--muted)">No invoices found for this filter.</p>
         )}
       </div>
     </div>

@@ -70,7 +70,7 @@ export default function ClientsPage() {
   if (loading) {
     return (
       <main className="mx-auto max-w-[1600px] px-6 py-32 md:px-20">
-        <div className="text-[var(--muted)]">Loading clients...</div>
+        <div className="text-(--muted)">Loading clients...</div>
       </main>
     )
   }
@@ -79,8 +79,8 @@ export default function ClientsPage() {
     <main className="mx-auto max-w-[1600px] px-6 py-32 md:px-20">
       <div className="saintce-panel px-6 py-8 md:px-8">
         <div className="mb-8">
-          <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-[var(--signal)]">Client archive</p>
-          <h1 className="mt-4 font-display text-[clamp(2.6rem,5vw,5rem)] leading-none tracking-[-0.04em] text-[var(--text-primary)]">
+          <p className="font-mono text-[0.75rem] uppercase tracking-[0.16em] text-(--signal)">Client archive</p>
+          <h1 className="mt-4 font-display text-[clamp(2.6rem,5vw,5rem)] leading-none tracking-[-0.04em] text-(--text-primary)">
             Live work registry
           </h1>
         </div>
@@ -104,7 +104,7 @@ export default function ClientsPage() {
               </div>
             ))
           ) : (
-            <div className="text-[var(--muted)]">No clients found.</div>
+            <div className="text-(--muted)">No clients found.</div>
           )}
         </div>
       </div>
