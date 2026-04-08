@@ -61,13 +61,13 @@ export async function GET(request: Request) {
     if (type === "clients") {
       const { data, error } = await admin
         .from("clients")
-        .select("id, name, email, phone, company, created_at")
+        .select("id, name, email, phone, company_name, created_at")
         .is("deleted_at", null)
         .order("created_at", { ascending: false })
 
       if (error) throw error
 
-      const columns = ["id", "name", "email", "phone", "company", "created_at"]
+      const columns = ["id", "name", "email", "phone", "company_name", "created_at"]
       const csv = toCSV((data ?? []) as Array<Record<string, unknown>>, columns)
 
       return new Response(csv, {

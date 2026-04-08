@@ -32,7 +32,13 @@ export default function AppInvoicesPage() {
     setLoading(false)
   }, [router])
 
-  useEffect(() => { void load() }, [load])
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void load()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [load])
 
   const filtered = filter === "all" ? invoices : invoices.filter((inv) => inv.status === filter)
   const outstanding = invoices

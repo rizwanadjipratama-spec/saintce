@@ -19,7 +19,13 @@ export default function AppPaymentsPage() {
     setLoading(false)
   }, [router])
 
-  useEffect(() => { void load() }, [load])
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void load()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [load])
 
   if (loading) return <p className="text-(--muted)">Loading payment history...</p>
 

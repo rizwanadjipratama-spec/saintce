@@ -10,11 +10,11 @@ import { getErrorMessage } from "@/lib/errors"
 interface AuditEntry {
   id: string
   table_name: string
-  operation: string
+  action: string
   record_id: string
   old_data: Record<string, unknown> | null
   new_data: Record<string, unknown> | null
-  changed_by: string | null
+  actor_user_id: string | null
   created_at: string
 }
 
@@ -25,11 +25,11 @@ const OP_COLOR: Record<string, string> = {
 }
 
 function describeChange(entry: AuditEntry): string {
-  if (entry.operation === "INSERT") {
+  if (entry.action === "INSERT") {
     const name = entry.new_data?.name ?? entry.new_data?.number ?? entry.record_id
     return `Created ${entry.table_name.replace(/_/g, " ")}: ${String(name)}`
   }
-  if (entry.operation === "DELETE") {
+  if (entry.action === "DELETE") {
     const name = entry.old_data?.name ?? entry.old_data?.number ?? entry.record_id
     return `Deleted from ${entry.table_name.replace(/_/g, " ")}: ${String(name)}`
   }
@@ -71,7 +71,7 @@ export default function ClientActivityPage() {
       // We look for records where record_id = clientId, or in child tables via new_data/old_data containing client_id
       const { data, error } = await supabase
         .from("audit_logs")
-        .select("id, table_name, operation, record_id, old_data, new_data, changed_by, created_at")
+        .select("id, table_name, action, record_id, old_data, new_data, actor_user_id, created_at")
         .or(`record_id.eq.${clientId},new_data->>client_id.eq.${clientId},old_data->>client_id.eq.${clientId}`)
         .order("created_at", { ascending: false })
         .limit(150)
@@ -125,14 +125,14 @@ export default function ClientActivityPage() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className={`text-xs font-mono uppercase ${OP_COLOR[entry.operation] ?? "text-(--muted)"}`}>
-                        {entry.operation}
+                      <span className={`text-xs font-mono uppercase ${OP_COLOR[entry.action] ?? "text-(--muted)"}`}>
+                        {entry.action}
                       </span>
                       <span className="text-xs text-(--muted)">{entry.table_name}</span>
                     </div>
                     <p className="mt-1 text-sm text-(--text-primary)">{describeChange(entry)}</p>
-                    {entry.changed_by && (
-                      <p className="mt-0.5 text-xs text-(--muted)">by {entry.changed_by}</p>
+                    {entry.actor_user_id && (
+                      <p className="mt-0.5 text-xs text-(--muted)">by {entry.actor_user_id}</p>
                     )}
                   </div>
                   <p className="shrink-0 text-xs text-(--muted)">

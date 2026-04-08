@@ -36,7 +36,13 @@ export default function AppInvoicePrintPage() {
     setLoading(false)
   }, [invoiceId, router])
 
-  useEffect(() => { void load() }, [load])
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void load()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [load])
 
   if (loading || !invoice) {
     return <div style={{ padding: "2rem", fontFamily: "Arial, sans-serif" }}>Loading...</div>

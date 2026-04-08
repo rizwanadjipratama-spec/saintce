@@ -38,7 +38,11 @@ export default function PortalInvoicesPage() {
   }, [router])
 
   useEffect(() => {
-    void load()
+    const timeoutId = window.setTimeout(() => {
+      void load()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
   }, [load])
 
   const filtered = filter === "all" ? invoices : invoices.filter((inv) => inv.status === filter)

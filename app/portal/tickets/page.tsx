@@ -139,7 +139,7 @@ export default function PortalTicketsPage() {
         {/* Ticket list */}
         <section className="saintce-inset rounded-[28px] p-6">
           {tickets.length === 0 ? (
-            <p className="text-(--muted)">No tickets yet. Click "New ticket" to get started.</p>
+            <p className="text-(--muted)">No tickets yet. Click &quot;New ticket&quot; to get started.</p>
           ) : (
             <div className="space-y-2">
               {tickets.map((ticket) => (

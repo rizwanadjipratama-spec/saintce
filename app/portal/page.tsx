@@ -43,7 +43,11 @@ export default function PortalDashboardPage() {
   }, [router])
 
   useEffect(() => {
-    void load()
+    const timeoutId = window.setTimeout(() => {
+      void load()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
   }, [load])
 
   if (loading || !summary) {

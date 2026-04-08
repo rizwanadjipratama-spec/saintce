@@ -35,7 +35,13 @@ export default function AppDashboardPage() {
     setLoading(false)
   }, [router])
 
-  useEffect(() => { void load() }, [load])
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void load()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [load])
 
   if (loading || !summary) {
     return <p className="text-(--muted)">Loading dashboard...</p>

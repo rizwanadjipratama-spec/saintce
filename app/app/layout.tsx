@@ -53,11 +53,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener("mousedown", handler)
   }, [avatarOpen])
 
-  // Close mobile nav on route change
-  useEffect(() => {
-    setMobileOpen(false)
-  }, [pathname])
-
   const handleSignOut = useCallback(async () => {
     await signOutPortal()
     router.replace("/login")
@@ -196,6 +191,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <li key={link.href}>
                     <Link
                       href={link.href}
+                      onClick={() => setMobileOpen(false)}
                       className={`flex items-center rounded-[14px] px-3 py-3 text-sm ${
                         isActive
                           ? "bg-(--panel-subtle) text-(--text-primary)"
@@ -219,7 +215,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
               <button
-                onClick={handleSignOut}
+                onClick={async () => {
+                  setMobileOpen(false)
+                  await handleSignOut()
+                }}
                 className="w-full rounded-[14px] px-3 py-2.5 text-left text-sm text-(--signal)"
               >
                 Sign out
@@ -241,6 +240,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <Link
                 key={link.href}
                 href={link.href}
+                onClick={() => setMobileOpen(false)}
                 className={`flex flex-col items-center rounded-2xl py-2 text-[0.62rem] uppercase tracking-widest transition-colors ${
                   isActive
                     ? "bg-(--panel-subtle) text-(--text-primary)"

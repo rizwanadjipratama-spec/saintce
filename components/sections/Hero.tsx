@@ -33,9 +33,6 @@ export default function Hero({ content }: { content: HeroContent }) {
                 <button onClick={handleContactRoute} className="saintce-button">
                   {content.primaryLabel}
                 </button>
-                <a href="/login" className="saintce-button saintce-button--ghost">
-                  Client Login
-                </a>
               </div>
             </div>
 

@@ -51,7 +51,7 @@ const SECTIONS: Section[] = [
       { label: "Create storage bucket", detail: "Supabase Dashboard → Storage → New bucket → Name: client-files → Private (not public)" },
       { label: "Set storage RLS policies", detail: "Authenticated users can upload to clients/{client_id}/* — add RLS on storage.objects for bucket client-files" },
       { label: "Configure auth", detail: "Supabase Dashboard → Auth → Email → Enable magic link. Set Site URL to production domain. Add redirect URLs." },
-      { label: "Add admin user", detail: "Create auth user in Supabase Auth, then insert into admin_users table: INSERT INTO admin_users (user_id, is_active) VALUES (uuid, true)" },
+      { label: "Add admin user", detail: "Create auth user in Supabase Auth, then insert into admin_users table with required columns: INSERT INTO admin_users (user_id, email, role, is_active) VALUES (uuid, 'admin@yourdomain.com', 'admin', true)" },
       { label: "Enable realtime", detail: "Supabase Dashboard → Database → Replication → Enable for tables needing realtime: clients, tickets, notifications" },
     ],
   },
@@ -117,11 +117,14 @@ export default function AdminDeploymentPage() {
   const [expanded, setExpanded] = useState<string>("env")
 
   useEffect(() => {
-    // Persist checklist state to localStorage
-    try {
-      const saved = localStorage.getItem("saintce-deployment-checklist")
-      if (saved) setChecked(JSON.parse(saved) as Record<string, boolean>)
-    } catch { /* ignore */ }
+    const restoreTimeoutId = window.setTimeout(() => {
+      try {
+        const saved = localStorage.getItem("saintce-deployment-checklist")
+        if (saved) setChecked(JSON.parse(saved) as Record<string, boolean>)
+      } catch {
+        // ignore malformed local storage
+      }
+    }, 0)
 
     let active = true
     const init = async () => {
@@ -130,7 +133,10 @@ export default function AdminDeploymentPage() {
       if (active) setLoading(false)
     }
     void init()
-    return () => { active = false }
+    return () => {
+      active = false
+      window.clearTimeout(restoreTimeoutId)
+    }
   }, [router])
 
   const toggle = (key: string) => {

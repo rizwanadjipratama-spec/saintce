@@ -13,7 +13,6 @@ export async function uploadClientFile(args: {
     throw new Error(`File too large. Maximum size is 50MB.`)
   }
 
-  const ext = args.file.name.split(".").pop() ?? ""
   const safeName = args.file.name.replace(/[^a-zA-Z0-9._-]/g, "_")
   const storagePath = `clients/${args.clientId}/${Date.now()}_${safeName}`
 

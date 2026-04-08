@@ -43,7 +43,13 @@ export default function AppInvoiceDetailPage() {
     setLoading(false)
   }, [invoiceId, router])
 
-  useEffect(() => { void load() }, [load])
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void load()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [load])
 
   const handlePay = useCallback(async () => {
     if (!invoice || !invoiceId) return

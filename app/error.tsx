@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
+import Link from "next/link"
 
 interface ErrorPageProps {
   error: Error & { digest?: string }
@@ -29,9 +30,9 @@ export default function GlobalError({ error, reset }: ErrorPageProps) {
         <button onClick={reset} className="saintce-button">
           Try again
         </button>
-        <a href="/" className="saintce-button saintce-button--ghost">
+        <Link href="/" className="saintce-button saintce-button--ghost">
           Home
-        </a>
+        </Link>
       </div>
     </div>
   )

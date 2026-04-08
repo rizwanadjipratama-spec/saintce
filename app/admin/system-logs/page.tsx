@@ -20,7 +20,7 @@ interface AutomationLog {
 interface WebhookEvent {
   id: string
   event_type: string
-  stripe_event_id: string
+  event_id: string
   processed_at: string | null
   error_message: string | null
   created_at: string
@@ -56,7 +56,7 @@ export default function AdminSystemLogsPage() {
           .limit(50),
         supabase
           .from("stripe_webhook_events")
-          .select("id, event_type, stripe_event_id, processed_at, error_message, created_at")
+          .select("id, event_id, event_type, processed_at, error_message, created_at")
           .order("created_at", { ascending: false })
           .limit(100),
         supabase
@@ -172,7 +172,7 @@ export default function AdminSystemLogsPage() {
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="text-sm text-(--text-primary)">{ev.event_type}</p>
-                      <p className="mt-1 font-mono text-xs text-(--muted)">{ev.stripe_event_id}</p>
+                      <p className="mt-1 font-mono text-xs text-(--muted)">{ev.event_id}</p>
                       {ev.error_message && (
                         <p className="mt-1 text-xs text-(--signal)">{ev.error_message}</p>
                       )}
